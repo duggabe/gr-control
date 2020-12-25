@@ -5,13 +5,18 @@ Modular transmit / receive station control
 
 This package contains GNU Radio flowgraphs for transmitters and receivers. They work in conjunction with the station control module which contains USRP source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
 
-The package uses three separate processes. They can all be on the same computer or on two or three separate computers as the user sees fit. It has been tested with GNU Radio version 3.9.0.RC0.
+This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
+
+The package uses three separate processes which **run concurrently:** station control, a receiver, and a transmitter. They all can be on the same computer or on two or three separate computers according to the users needs. It has been tested with GNU Radio version 3.9.0.RC0, but can be adapted to 3.8 versions.
 
 ## Installation
 
-See [What is GNU Radio?](https://wiki.gnuradio.org/index.php/What_is_GNU_Radio%3F) and [Installing GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) for background information.
+**IMPORTANT NOTES:**
 
-Note: These instructions are written for a Linux OS. Similar commands work for Mac and Windows.
+* These instructions are written for a Linux OS. Similar commands work for Mac and Windows.
+* Use the `clone` command rather than downloading a Zip file.
+
+See [What is GNU Radio?](https://wiki.gnuradio.org/index.php/What_is_GNU_Radio%3F) and [Installing GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) for background information.
 
 1. Open a terminal window.
 2. Change to the home directory.  
@@ -27,27 +32,16 @@ sudo apt install git
 git clone https://github.com/duggabe/gr-control.git
 ```
 
-## Preparation
-
-1. Go to the gr-control folder.  
-```
-cd ~/gr-control
-```
-2. Execute Gnu Radio Companion.  
-```
-gnuradio-companion
-```
-3. Open `xmt_rcv_switch.grc` from the file menu.
-4. Click 'Run' and 'Generate' or press F5.
-5. Open `Receivers/NFM_rcv.grc` from the file menu.
-6. Click 'Run' and 'Generate' or press F5.
-7. Open `Receivers/WBFM_stereo.grc` from the file menu.
-8. Click 'Run' and 'Generate' or press F5.
-9. To Terminate gnuradio-companion, click the 'x' in the corner of the title line.
-
 ## Operation
 
-The package uses three separate processes. They can all be on the same computer or on two or three separate computers as the user sees fit by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
+The package uses three separate processes. They can all be on the same computer or on two or three separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
+
+### Data Flow Description
+
+1. In the Station Control Module, received data from the USRP Source block passes through a Mute block to a ZMQ PUB Sink on port 49201.
+2. A receiver program (running in a second process) listens with a ZMQ SUB Source on port 49201 and then demodulates the signal.
+3. A transmit program (running in a third process) generates a baseband signal and sends it to a ZMQ PUB Sink on port 49203.
+4. In the Station Control Module, a ZMQ SUB Source block on port 49203 gets data to be transmitted and passes it through a Mute block to a USRP Sink.
 
 ### Station Control Module
 
@@ -71,8 +65,6 @@ python3 -u xmt_rcv_switch.py
   * delay 10 ms
   * unmute transmitter
   
-4. To Terminate the program, click the 'x' in the corner of the title line.
-
 ### Receiver
 
 Currently there are two programs for receiving:
@@ -94,9 +86,8 @@ OR
 python3 -u WBFM_stereo.py
 ```
 3. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
-4. To Terminate the program, click the 'x' in the corner of the title line.
 
 ### Transmitter
 
-Various transmitters will be added soon.
+Various transmitters will be added soon!
 
