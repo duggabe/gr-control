@@ -7,7 +7,7 @@ This package contains GNU Radio flowgraphs for transmitters and receivers. They 
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
 
-The package uses three separate processes which **run concurrently:** station control, a receiver, and a transmitter. They all can be on the same computer or on two or three separate computers according to the users needs. It has been tested with GNU Radio version 3.9.0.RC0, but can be adapted to 3.8 versions.
+The package uses three separate processes which **run concurrently:** station control, a receiver, and a transmitter. They all can be on the same computer or on two or three separate computers according to the users needs. It has been tested with GNU Radio version 3.9.0.RC0, but can be adapted to 3.8 versions. An ADALM-Pluto can be substituted for the USRP. Other hardware can be used as well, but has not been tested.
 
 ## Installation
 
@@ -34,7 +34,7 @@ git clone https://github.com/duggabe/gr-control.git
 
 ## Operation
 
-The package uses three separate processes. They can all be on the same computer or on two or three separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
+The package uses three separate processes. They all can be on the same computer or on two or three separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
 ### Data Flow Description
 
@@ -64,12 +64,14 @@ python3 -u xmt_rcv_switch.py
   * turn on Amp LED
   * delay 10 ms
   * unmute transmitter
-  
+4. At the present time, operation is simplex but repeater offset will be added.
+
 ### Receiver
 
-Currently there are two programs for receiving:
+Currently there are three programs for receiving:
 
 * Narrow Band FM - `NFM_rcv`
+* Single Sideband - `SSB_rcv`
 * Broadcast FM Stereo - `WBFM_stereo`
 
 1. Open a second terminal window.
@@ -77,17 +79,27 @@ Currently there are two programs for receiving:
 ```
 cd ~/gr-control/Receivers
 ```
-2. Execute the receiver of your choice.  
-```
-python3 -u NFM_rcv.py
-```
-OR
-```
-python3 -u WBFM_stereo.py
-```
-3. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
+3. Execute the receiver of your choice.  
+    `python3 -u NFM_rcv.py`   
+    `python3 -u SSB_rcv.py`  
+    `python3 -u WBFM_stereo.py`  
+4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
 
 ### Transmitter
 
-Various transmitters will be added soon!
+Currently there are two programs for transmitting:
+
+* Narrow Band FM - `NFM_xmt`
+* Single Sideband - `SSB_xmt`
+
+1. Open a third terminal window.
+2. Go to the gr-control/Transmitters folder.  
+```
+cd ~/gr-control/Transmitters
+```
+3. Execute the transmitter of your choice.  
+    `python3 -u NFM_xmt.py`  
+    `python3 -u SSB_xmt.py`  
+4. A new window will open showing an Audio Gain control as well as a frequency spectrum display.
+
 
