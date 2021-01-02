@@ -26,8 +26,9 @@ from PyQt5 import Qt
 from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import eng_notation
 from gnuradio import blocks
-from gnuradio import gr
+from gnuradio import filter
 from gnuradio.filter import firdes
+from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
@@ -214,8 +215,18 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.low_pass_filter_0 = filter.fir_filter_ccf(
+            1,
+            firdes.low_pass(
+                1,
+                samp_rate,
+                5000,
+                1000,
+                window.WIN_HAMMING,
+                6.76))
         self.epy_block_0 = epy_block_0.blk()
-        self.blocks_mute_xx_0_0 = blocks.mute_cc(bool(True))
+        self.blocks_selector_0 = blocks.selector(gr.sizeof_gr_complex*1,0,0)
+        self.blocks_selector_0.set_enabled(False)
         self.blocks_mute_xx_0 = blocks.mute_cc(bool(False))
 
 
@@ -224,15 +235,16 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.epy_block_0, 'rx_mute'), (self.blocks_mute_xx_0, 'set_mute'))
-        self.msg_connect((self.epy_block_0, 'tx_mute'), (self.blocks_mute_xx_0_0, 'set_mute'))
+        self.msg_connect((self.epy_block_0, 'tx_mute'), (self.blocks_selector_0, 'en'))
         self.msg_connect((self.epy_block_0, 'ant_sw'), (self.qtgui_ledindicator_0, 'state'))
         self.msg_connect((self.epy_block_0, 'pa_sw'), (self.qtgui_ledindicator_1, 'state'))
         self.msg_connect((self.epy_block_0, 'rx_led'), (self.qtgui_ledindicator_2, 'state'))
         self.msg_connect((self.state, 'state'), (self.epy_block_0, 'msg_in'))
         self.connect((self.blocks_mute_xx_0, 0), (self.zeromq_pub_sink_0, 0))
-        self.connect((self.blocks_mute_xx_0_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.blocks_selector_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.blocks_mute_xx_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.blocks_mute_xx_0_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.blocks_selector_0, 0))
 
 
     def closeEvent(self, event):
@@ -292,6 +304,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5000, 1000, window.WIN_HAMMING, 6.76))
 
     def get_gain(self):
         return self.gain

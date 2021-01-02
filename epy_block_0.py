@@ -64,14 +64,14 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
                 # delay 10 ms
                 time.sleep (0.01)
 
-                # unmute transmit
-                self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(False))
+                # unmute transmit (enable Selector)
+                self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(True))
 
         else:
                 # print ("switching to receive")
 
-                # mute transmit
-                self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(True))
+                # mute transmit (disable Selector)
+                self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(False))
 
                 # turn off power amp
                 # turn off GPIO pin
