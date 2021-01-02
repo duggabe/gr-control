@@ -22,16 +22,17 @@ if __name__ == '__main__':
         except:
             print("Warning: failed to XInitThreads()")
 
+from PyQt5 import Qt
+from PyQt5.QtCore import QObject, pyqtSlot
+from gnuradio import eng_notation
 from gnuradio import blocks
 from gnuradio import gr
 from gnuradio.filter import firdes
 from gnuradio.fft import window
 import sys
 import signal
-from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
-from gnuradio import eng_notation
 from gnuradio import qtgui
 from gnuradio import uhd
 import time
@@ -78,30 +79,53 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.offset = offset = 0
+        self.freq = freq = 144.92e6
+        self.tx_freq = tx_freq = freq+offset
+        self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
+        self.tx_gain = tx_gain = 0.9
         self.state = state = 0
         self.samp_rate = samp_rate = 768000
-        self.gain = gain = 50
-        self.freq = freq = 144.12e6
+        self.gain = gain = 0.50
 
         ##################################################
         # Blocks
         ##################################################
-        self._gain_range = Range(0, 76, 1, 50, 200)
-        self._gain_win = RangeWidget(self._gain_range, self.set_gain, 'Rcv Gain', "slider", int, QtCore.Qt.Horizontal)
+        self._gain_range = Range(0, 1.00, 0.1, 0.50, 200)
+        self._gain_win = RangeWidget(self._gain_range, self.set_gain, 'Rcv Gain', "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._gain_win, 1, 0, 1, 3)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._freq_range = Range(88e6, 148e6, 10, 144.12e6, 200)
-        self._freq_win = RangeWidget(self._freq_range, self.set_freq, 'Frequency', "counter", float, QtCore.Qt.Horizontal)
-        self.top_grid_layout.addWidget(self._freq_win, 2, 0, 1, 3)
+        self._freq_tool_bar = Qt.QToolBar(self)
+        self._freq_tool_bar.addWidget(Qt.QLabel('Receive Freq' + ": "))
+        self._freq_line_edit = Qt.QLineEdit(str(self.freq))
+        self._freq_tool_bar.addWidget(self._freq_line_edit)
+        self._freq_line_edit.returnPressed.connect(
+            lambda: self.set_freq(eng_notation.str_to_num(str(self._freq_line_edit.text()))))
+        self.top_grid_layout.addWidget(self._freq_tool_bar, 2, 0, 1, 1)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 3):
+        for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
+        self._variable_qtgui_label_0_tool_bar = Qt.QToolBar(self)
+
+        if None:
+            self._variable_qtgui_label_0_formatter = None
+        else:
+            self._variable_qtgui_label_0_formatter = lambda x: eng_notation.num_to_str(x)
+
+        self._variable_qtgui_label_0_tool_bar.addWidget(Qt.QLabel('Transmit Freq' + ": "))
+        self._variable_qtgui_label_0_label = Qt.QLabel(str(self._variable_qtgui_label_0_formatter(self.variable_qtgui_label_0)))
+        self._variable_qtgui_label_0_tool_bar.addWidget(self._variable_qtgui_label_0_label)
+        self.top_grid_layout.addWidget(self._variable_qtgui_label_0_tool_bar, 2, 2, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(2, 3):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.uhd_usrp_source_0 = uhd.usrp_source(
             ",".join(('', "recv_buff_size=32768")),
             uhd.stream_args(
@@ -116,7 +140,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, 180000), 0)
         self.uhd_usrp_source_0.set_antenna("RX2", 0)
         self.uhd_usrp_source_0.set_rx_agc(False, 0)
-        self.uhd_usrp_source_0.set_gain(gain, 0)
+        self.uhd_usrp_source_0.set_normalized_gain(gain, 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
             ",".join(("", "send_buff_size=1024")),
             uhd.stream_args(
@@ -129,10 +153,10 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
         self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec(0))
 
-        self.uhd_usrp_sink_0.set_center_freq(freq, 0)
+        self.uhd_usrp_sink_0.set_center_freq(tx_freq, 0)
         self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
         self.uhd_usrp_sink_0.set_bandwidth(200000, 0)
-        self.uhd_usrp_sink_0.set_normalized_gain(0.2, 0)
+        self.uhd_usrp_sink_0.set_normalized_gain(tx_gain, 0)
         if int == bool:
         	self._state_choices = {'Pressed': bool(1), 'Released': bool(0)}
         elif int == str:
@@ -170,6 +194,26 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
+        # Create the options list
+        self._offset_options = [-600000, 0, 600000]
+        # Create the labels list
+        self._offset_labels = ["-600kHz", "0", "+600kHz"]
+        # Create the combo box
+        self._offset_tool_bar = Qt.QToolBar(self)
+        self._offset_tool_bar.addWidget(Qt.QLabel('Offset' + ": "))
+        self._offset_combo_box = Qt.QComboBox()
+        self._offset_tool_bar.addWidget(self._offset_combo_box)
+        for _label in self._offset_labels: self._offset_combo_box.addItem(_label)
+        self._offset_callback = lambda i: Qt.QMetaObject.invokeMethod(self._offset_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._offset_options.index(i)))
+        self._offset_callback(self.offset)
+        self._offset_combo_box.currentIndexChanged.connect(
+            lambda i: self.set_offset(self._offset_options[i]))
+        # Create the radio buttons
+        self.top_grid_layout.addWidget(self._offset_tool_bar, 2, 1, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(1, 2):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.epy_block_0 = epy_block_0.blk()
         self.blocks_mute_xx_0_0 = blocks.mute_cc(bool(True))
         self.blocks_mute_xx_0 = blocks.mute_cc(bool(False))
@@ -196,6 +240,45 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
+    def get_offset(self):
+        return self.offset
+
+    def set_offset(self, offset):
+        self.offset = offset
+        self._offset_callback(self.offset)
+        self.set_tx_freq(self.freq+self.offset)
+
+    def get_freq(self):
+        return self.freq
+
+    def set_freq(self, freq):
+        self.freq = freq
+        Qt.QMetaObject.invokeMethod(self._freq_line_edit, "setText", Qt.Q_ARG("QString", eng_notation.num_to_str(self.freq)))
+        self.set_tx_freq(self.freq+self.offset)
+        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(self.freq, 180000), 0)
+
+    def get_tx_freq(self):
+        return self.tx_freq
+
+    def set_tx_freq(self, tx_freq):
+        self.tx_freq = tx_freq
+        self.set_variable_qtgui_label_0(self._variable_qtgui_label_0_formatter(self.tx_freq))
+        self.uhd_usrp_sink_0.set_center_freq(self.tx_freq, 0)
+
+    def get_variable_qtgui_label_0(self):
+        return self.variable_qtgui_label_0
+
+    def set_variable_qtgui_label_0(self, variable_qtgui_label_0):
+        self.variable_qtgui_label_0 = variable_qtgui_label_0
+        Qt.QMetaObject.invokeMethod(self._variable_qtgui_label_0_label, "setText", Qt.Q_ARG("QString", self.variable_qtgui_label_0))
+
+    def get_tx_gain(self):
+        return self.tx_gain
+
+    def set_tx_gain(self, tx_gain):
+        self.tx_gain = tx_gain
+        self.uhd_usrp_sink_0.set_normalized_gain(self.tx_gain, 0)
+
     def get_state(self):
         return self.state
 
@@ -215,15 +298,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
 
     def set_gain(self, gain):
         self.gain = gain
-        self.uhd_usrp_source_0.set_gain(self.gain, 0)
-
-    def get_freq(self):
-        return self.freq
-
-    def set_freq(self, freq):
-        self.freq = freq
-        self.uhd_usrp_sink_0.set_center_freq(self.freq, 0)
-        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(self.freq, 180000), 0)
+        self.uhd_usrp_source_0.set_normalized_gain(self.gain, 0)
 
 
 

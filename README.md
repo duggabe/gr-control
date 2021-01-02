@@ -54,7 +54,7 @@ cd ~/gr-control
 ```
 python3 -u xmt_rcv_switch.py
 ```
-3. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Frequency selection, and a Transmit switch. Clicking the Transmit switch will perform the following sequence:
+3. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence:
   * mute receiver
   * turn off rcv LED
   * switch antenna from rcv to xmt (once implemented)
@@ -64,7 +64,10 @@ python3 -u xmt_rcv_switch.py
   * turn on Amp LED
   * delay 10 ms
   * unmute transmitter
-4. At the present time, operation is simplex but repeater offset will be added.
+
+Here is a screen shot:
+
+![screen shot](./xmt_rcv_switch_out.png "gr-control Station Control")
 
 ### Receiver
 
@@ -100,6 +103,6 @@ cd ~/gr-control/Transmitters
 3. Execute the transmitter of your choice.  
     `python3 -u NFM_xmt.py`  
     `python3 -u SSB_xmt.py`  
-4. A new window will open showing an Audio Gain control as well as a frequency spectrum display.
+4. A new window will open showing an Audio Gain control as well as a frequency spectrum display. The NFM_xmt screen also has a selector for PL tones. Using a tone of 0.0 turns off the PL.
 
 
