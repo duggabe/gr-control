@@ -3,11 +3,20 @@ Modular transmit / receive station control
 
 **This is a work in progress**
 
-This package contains GNU Radio flowgraphs for transmitters and receivers. They work in conjunction with the station control module which contains USRP source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
+This package contains GNU Radio flowgraphs for transmitters and receivers. They work in conjunction with the station control module which contains ADALM-Pluto source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
 
-The package uses three separate processes which **run concurrently:** station control, a receiver, and a transmitter. They all can be on the same computer or on two or three separate computers according to the users needs. It has been tested with GNU Radio version 3.9.0.RC0, but can be adapted to 3.8 versions. An ADALM-Pluto can be substituted for the USRP. Other hardware can be used as well, but has not been tested.
+The package uses three separate processes which **run concurrently:** station control, a receiver, and a transmitter. They all can be on the same computer or on two or three separate computers according to the users needs.
+
+## Versions
+
+There are two branches of this repository:
+
+* `main` (the default) contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto.
+* `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device.
+
+Instructions are given below to load the desired version.
 
 ## Installation
 
@@ -31,6 +40,10 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
+5. If you want the 3.9 version, enter  
+```
+git checkout maint-3.9 
+```
 
 ## Operation
 
@@ -38,10 +51,10 @@ The package uses three separate processes. They all can be on the same computer 
 
 ### Data Flow Description
 
-1. In the Station Control Module, received data from the USRP Source block passes through a Mute block to a ZMQ PUB Sink on port 49201.
+1. In the Station Control Module, received data from the Pluto Source block passes through a Mute block to a ZMQ PUB Sink on port 49201.
 2. A receiver program (running in a second process) listens with a ZMQ SUB Source on port 49201 and then demodulates the signal.
 3. A transmit program (running in a third process) generates a baseband signal and sends it to a ZMQ PUB Sink on port 49203.
-4. In the Station Control Module, a ZMQ SUB Source block on port 49203 gets data to be transmitted and passes it through a Mute block to a USRP Sink.
+4. In the Station Control Module, a ZMQ SUB Source block on port 49203 gets the data to be transmitted and passes it through a Selector block to a Pluto Sink.
 
 ### Station Control Module
 
@@ -75,7 +88,8 @@ Currently there are three programs for receiving:
 
 * Narrow Band FM - `NFM_rcv`
 * Single Sideband - `SSB_rcv`
-* Broadcast FM Stereo - `WBFM_stereo`
+* Broadcast FM (mono) - `WBFM_rcv` for 3.8
+* Broadcast FM Stereo - `WBFM_stereo` for 3.9
 
 1. Open a second terminal window.
 2. Go to the gr-control/Receivers folder.  
@@ -85,7 +99,8 @@ cd ~/gr-control/Receivers
 3. Execute the receiver of your choice.  
     `python3 -u NFM_rcv.py`   
     `python3 -u SSB_rcv.py`  
-    `python3 -u WBFM_stereo.py`  
+    `python3 -u WBFM_rcv.py`  for 3.8  
+    `python3 -u WBFM_stereo.py`  for 3.9  
 4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
 
 ### Transmitter

@@ -8,7 +8,7 @@
 # Title: NFM_rcv
 # Author: Barry Duggan
 # Description: NB FM receiver
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.8.2.0
 
 from distutils.version import StrictVersion
 
@@ -31,7 +31,6 @@ from gnuradio import audio
 from gnuradio import blocks
 from gnuradio import filter
 from gnuradio import gr
-from gnuradio.fft import window
 import sys
 import signal
 from argparse import ArgumentParser
@@ -39,14 +38,13 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
-from PyQt5 import QtCore
 
 from gnuradio import qtgui
 
 class NFM_rcv(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "NFM_rcv", catch_exceptions=True)
+        gr.top_block.__init__(self, "NFM_rcv")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("NFM_rcv")
         qtgui.util.check_set_qss()
@@ -79,30 +77,29 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 768000
+        self.samp_rate = samp_rate = 576000
         self.volume = volume = 0.05
         self.sq_lvl = sq_lvl = -50
-        self.rf_decim = rf_decim = 4
-        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, -3000, 3000, 200, window.WIN_HAMMING, 6.76)
+        self.rf_decim = rf_decim = 3
+        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, -3000, 3000, 200, firdes.WIN_HAMMING, 6.76)
 
         ##################################################
         # Blocks
         ##################################################
         self._volume_range = Range(0, 1.00, 0.05, 0.05, 200)
-        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "slider", float, QtCore.Qt.Horizontal)
+        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "slider", float)
         self.top_grid_layout.addWidget(self._volume_win)
         self._sq_lvl_range = Range(-100, 0, 5, -50, 200)
-        self._sq_lvl_win = RangeWidget(self._sq_lvl_range, self.set_sq_lvl, 'Squelch', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._sq_lvl_win = RangeWidget(self._sq_lvl_range, self.set_sq_lvl, 'Squelch', "counter_slider", float)
         self.top_grid_layout.addWidget(self._sq_lvl_win)
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
             1024, #size
-            window.WIN_BLACKMAN_hARRIS, #wintype
+            firdes.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
             samp_rate, #bw
             "", #name
-            1, #number of inputs
-            None # parent
+            1 #number of inputs
         )
         self.qtgui_waterfall_sink_x_0.set_update_time(0.10)
         self.qtgui_waterfall_sink_x_0.enable_grid(False)

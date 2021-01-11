@@ -8,7 +8,7 @@
 # Title: SSB_rcv
 # Author: Barry Duggan
 # Description: Weaver method
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.8.2.0
 
 from distutils.version import StrictVersion
 
@@ -32,7 +32,6 @@ from gnuradio import audio
 from gnuradio import blocks
 from gnuradio import filter
 from gnuradio import gr
-from gnuradio.fft import window
 import sys
 import signal
 from argparse import ArgumentParser
@@ -40,14 +39,13 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
-from PyQt5 import QtCore
 
 from gnuradio import qtgui
 
 class SSB_rcv(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "SSB_rcv", catch_exceptions=True)
+        gr.top_block.__init__(self, "SSB_rcv")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("SSB_rcv")
         qtgui.util.check_set_qss()
@@ -80,19 +78,19 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 768000
+        self.samp_rate = samp_rate = 576000
         self.audio_rate = audio_rate = 48000
         self.volume = volume = 0.05
         self.reverse = reverse = -1
         self.decim = decim = (int)(samp_rate/audio_rate)
-        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, 300, 5000, 100, window.WIN_HAMMING, 6.76)
+        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, 300, 5000, 100, firdes.WIN_HAMMING, 6.76)
         self.bfo = bfo = 1500
 
         ##################################################
         # Blocks
         ##################################################
         self._volume_range = Range(0, 1.0, 0.05, 0.05, 200)
-        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float)
         self.top_grid_layout.addWidget(self._volume_win)
         # Create the options list
         self._reverse_options = (-1, 1, )
@@ -120,17 +118,16 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
             lambda i: self.set_reverse(self._reverse_options[i]))
         self.top_grid_layout.addWidget(self._reverse_group_box)
         self._bfo_range = Range(0, 3000, 10, 1500, 200)
-        self._bfo_win = RangeWidget(self._bfo_range, self.set_bfo, 'Fine tuning', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._bfo_win = RangeWidget(self._bfo_range, self.set_bfo, 'Fine tuning', "counter_slider", float)
         self.top_grid_layout.addWidget(self._bfo_win)
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
             1024, #size
-            window.WIN_BLACKMAN_hARRIS, #wintype
+            firdes.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
             samp_rate, #bw
             "", #name
-            1, #number of inputs
-            None # parent
+            1 #number of inputs
         )
         self.qtgui_waterfall_sink_x_0.set_update_time(0.10)
         self.qtgui_waterfall_sink_x_0.enable_grid(False)
