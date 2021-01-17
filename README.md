@@ -1,8 +1,6 @@
 # gr-control
 Modular transmit / receive station control
 
-**This is a work in progress**
-
 This package contains GNU Radio flowgraphs for transmitters and receivers. They work in conjunction with the station control module which contains ADALM-Pluto source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
@@ -23,7 +21,7 @@ Instructions are given below to load the desired version.
 **IMPORTANT NOTES:**
 
 * These instructions are written for a Linux OS. Similar commands work for Mac and Windows.
-* Use the `clone` command rather than downloading a Zip file.
+* Use the `clone` command rather than downloading a Zip file!
 
 See [What is GNU Radio?](https://wiki.gnuradio.org/index.php/What_is_GNU_Radio%3F) and [Installing GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) for background information.
 
@@ -43,6 +41,45 @@ git clone https://github.com/duggabe/gr-control.git
 5. If you want the 3.9 version, enter  
 ```
 git checkout maint-3.9 
+```
+6. For version 3.8, load and build [gr-guiextra](https://github.com/ghostop14/gr-guiextra).  
+7. For version 3.8, load and build `gr-iio` as follows:
+
+* Go to [ModuleNotFoundError](https://wiki.gnuradio.org/index.php/ModuleNotFoundError) to set your `PYTHONPATH` and `LD_LIBRARY_PATH`.  
+* Once you have started a new terminal, enter `env` to check that you have them set properly.  
+* In the following commands, change `/usr/local` if your prefix is different.  
+
+```
+cd ~
+sudo apt-get -y install libxml2 libxml2-dev bison flex libcdk5-dev cmake git libaio-dev libboost-all-dev swig \
+libgmp-dev liborc-0.4-dev libusb-1.0-0-dev doxygen python3-pip
+
+git clone https://github.com/analogdevicesinc/libiio.git
+cd ~/libiio
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ./
+make all
+sudo make install
+sudo ldconfig
+cd bindings/python/
+sudo python3 setup.py.cmakein install
+cd ~
+
+git clone https://github.com/analogdevicesinc/libad9361-iio.git
+cd ~/libad9361-iio
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ./
+make
+sudo make install
+sudo ldconfig
+cd ~
+
+git clone https://github.com/analogdevicesinc/gr-iio.git
+cd ~/gr-iio
+git checkout upgrade-3.8
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ./
+make
+sudo make install
+sudo ldconfig
+cd ~
 ```
 
 ## Operation
@@ -102,6 +139,8 @@ cd ~/gr-control/Receivers
     `python3 -u WBFM_rcv.py`  for 3.8  
     `python3 -u WBFM_stereo.py`  for 3.9  
 4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
+
+If you get lots of audio underruns (`aU`) on your terminal, refer to [Working with ALSA and Pulse Audio](https://wiki.gnuradio.org/index.php/ALSAPulseAudio).
 
 ### Transmitter
 
