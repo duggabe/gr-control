@@ -146,6 +146,7 @@ blocks:
     alias: ''
     audio_decimation: audio_decim
     comment: ''
+    deemph_tau: 75e-6
     maxoutbuf: '0'
     minoutbuf: '0'
     quad_rate: (int)(samp_rate/rf_decim)
@@ -153,7 +154,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 184.0]
+    coordinate: [680, 180.0]
     rotation: 0
     state: true
 - name: audio_sink_0

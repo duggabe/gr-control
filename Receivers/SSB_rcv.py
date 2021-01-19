@@ -8,7 +8,7 @@
 # Title: SSB_rcv
 # Author: Barry Duggan
 # Description: Weaver method
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -41,6 +41,8 @@ from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+
+
 
 from gnuradio import qtgui
 
@@ -95,9 +97,9 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._volume_win)
         # Create the options list
-        self._reverse_options = (-1, 1, )
+        self._reverse_options = [-1, 1]
         # Create the labels list
-        self._reverse_labels = ('Upper', 'Lower', )
+        self._reverse_labels = ['Upper', 'Lower']
         # Create the combo box
         # Create the radio buttons
         self._reverse_group_box = Qt.QGroupBox('Sideband' + ": ")
@@ -191,6 +193,9 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "SSB_rcv")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_samp_rate(self):
@@ -249,7 +254,6 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
 
 
 
-
 def main(top_block_cls=SSB_rcv, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -264,6 +268,9 @@ def main(top_block_cls=SSB_rcv, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -273,11 +280,6 @@ def main(top_block_cls=SSB_rcv, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':

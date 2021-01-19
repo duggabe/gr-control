@@ -8,7 +8,7 @@
 # Title: NFM_xmt
 # Author: Barry Duggan
 # Description: NBFM transmitter
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -41,6 +41,8 @@ from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+
+
 
 from gnuradio import qtgui
 
@@ -94,7 +96,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         # Create the options list
         self._pl_freq_options = [0.0, 67.0, 71.9, 74.4, 77.0, 79.7, 82.5, 85.4, 88.5, 91.5, 94.8, 97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8, 136.5, 141.3, 146.2, 151.4, 156.7, 162.2, 167.9, 173.8, 179.9, 186.2, 192.8, 203.5, 210.7, 218.1, 225.7, 233.6, 241.8, 250.3]
         # Create the labels list
-        self._pl_freq_labels = ["0.0", "67.0", "71.9", "74.4", "77.0", "79.7", "82.5", "85.4", "88.5", "91.5", "94.8", "97.4", "100.0", "103.5", "107.2", "110.9", "114.8", "118.8", "123.0", "127.3", "131.8", "136.5", "141.3", "146.2", "151.4", "156.7", "162.2", "167.9", "173.8", "179.9", "186.2", "192.8", "203.5", "210.7", "218.1", "225.7", "233.6", "241.8", "250.3"]
+        self._pl_freq_labels = ['0.0', '67.0', '71.9', '74.4', '77.0', '79.7', '82.5', '85.4', '88.5', '91.5', '94.8', '97.4', '100.0', '103.5', '107.2', '110.9', '114.8', '118.8', '123.0', '127.3', '131.8', '136.5', '141.3', '146.2', '151.4', '156.7', '162.2', '167.9', '173.8', '179.9', '186.2', '192.8', '203.5', '210.7', '218.1', '225.7', '233.6', '241.8', '250.3']
         # Create the combo box
         self._pl_freq_tool_bar = Qt.QToolBar(self)
         self._pl_freq_tool_bar.addWidget(Qt.QLabel('PL Tone' + ": "))
@@ -148,7 +150,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
                 200,
                 window.WIN_HAMMING,
                 6.76))
-        self.audio_source_0 = audio.source(48000, 'hw:CARD=Stereo,DEV=0', True)
+        self.audio_source_0 = audio.source(48000, '', True)
         self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_SIN_WAVE, pl_freq, 0.15, 0, 0)
         self.analog_nbfm_tx_0 = analog.nbfm_tx(
         	audio_rate=samp_rate,
@@ -177,6 +179,9 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "NFM_xmt")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_volume(self):
@@ -215,7 +220,6 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
 
 
 
-
 def main(top_block_cls=NFM_xmt, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -230,6 +234,9 @@ def main(top_block_cls=NFM_xmt, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -239,11 +246,6 @@ def main(top_block_cls=NFM_xmt, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':

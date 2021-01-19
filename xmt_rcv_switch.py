@@ -8,7 +8,7 @@
 # Title: xmt_rcv_switch
 # Author: Barry Duggan
 # Description: Station control module
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -41,6 +41,8 @@ from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 import epy_block_0
+
+
 
 from gnuradio import qtgui
 
@@ -198,7 +200,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         # Create the options list
         self._offset_options = [-600000, 0, 600000]
         # Create the labels list
-        self._offset_labels = ["-600kHz", "0", "+600kHz"]
+        self._offset_labels = ['-600kHz', '0', '+600kHz']
         # Create the combo box
         self._offset_tool_bar = Qt.QToolBar(self)
         self._offset_tool_bar.addWidget(Qt.QLabel('Offset' + ": "))
@@ -250,6 +252,9 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "xmt_rcv_switch")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_offset(self):
@@ -302,9 +307,9 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5000, 1000, window.WIN_HAMMING, 6.76))
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5000, 1000, window.WIN_HAMMING, 6.76))
 
     def get_gain(self):
         return self.gain
@@ -312,7 +317,6 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
     def set_gain(self, gain):
         self.gain = gain
         self.uhd_usrp_source_0.set_normalized_gain(self.gain, 0)
-
 
 
 
@@ -331,6 +335,9 @@ def main(top_block_cls=xmt_rcv_switch, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -340,11 +347,6 @@ def main(top_block_cls=xmt_rcv_switch, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':

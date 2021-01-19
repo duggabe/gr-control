@@ -8,7 +8,7 @@
 # Title: SSB_xmt
 # Author: Barry Duggan
 # Description: SSB transmitter
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -40,6 +40,8 @@ from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+
+
 
 from gnuradio import qtgui
 
@@ -138,7 +140,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_gr_complex*1, (int)(usrp_rate/samp_rate))
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(volume)
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
-        self.audio_source_0 = audio.source(48000, 'hw:CARD=Stereo,DEV=0', True)
+        self.audio_source_0 = audio.source(48000, '', True)
         self.analog_const_source_x_0 = analog.sig_source_f(0, analog.GR_CONST_WAVE, 0, 0, 0)
 
 
@@ -158,6 +160,9 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "SSB_xmt")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_samp_rate(self):
@@ -191,7 +196,6 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
 
 
 
-
 def main(top_block_cls=SSB_xmt, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -206,6 +210,9 @@ def main(top_block_cls=SSB_xmt, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -215,11 +222,6 @@ def main(top_block_cls=SSB_xmt, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':

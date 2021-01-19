@@ -119,7 +119,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    device_name: hw:CARD=Stereo,DEV=0
+    device_name: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     num_outputs: '1'
@@ -129,7 +129,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 196.0]
+    coordinate: [40, 204.0]
     rotation: 0
     state: enabled
 - name: blocks_float_to_complex_0

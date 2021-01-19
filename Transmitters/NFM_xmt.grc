@@ -162,7 +162,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    device_name: hw:CARD=Stereo,DEV=0
+    device_name: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     num_outputs: '1'
@@ -172,7 +172,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 188.0]
+    coordinate: [32, 196.0]
     rotation: 0
     state: enabled
 - name: band_pass_filter_0

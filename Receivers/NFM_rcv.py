@@ -8,7 +8,7 @@
 # Title: NFM_rcv
 # Author: Barry Duggan
 # Description: NB FM receiver
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -40,6 +40,8 @@ from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+
+
 
 from gnuradio import qtgui
 
@@ -157,6 +159,9 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "NFM_rcv")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_samp_rate(self):
@@ -196,7 +201,6 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
 
 
 
-
 def main(top_block_cls=NFM_rcv, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -211,6 +215,9 @@ def main(top_block_cls=NFM_rcv, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -220,11 +227,6 @@ def main(top_block_cls=NFM_rcv, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':

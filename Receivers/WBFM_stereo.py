@@ -8,7 +8,7 @@
 # Title: WBFM_stereo
 # Author: Barry Duggan
 # Description: Broadcast FM stereo
-# GNU Radio version: 3.9.0.RC0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -40,6 +40,8 @@ from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+
+
 
 from gnuradio import qtgui
 
@@ -137,6 +139,7 @@ class WBFM_stereo(gr.top_block, Qt.QWidget):
         self.analog_wfm_rcv_pll_0 = analog.wfm_rcv_pll(
         	demod_rate=(int)(samp_rate/rf_decim),
         	audio_decimation=audio_decim,
+        	deemph_tau=75e-6,
         )
         self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
 
@@ -158,6 +161,9 @@ class WBFM_stereo(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "WBFM_stereo")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_samp_rate(self):
@@ -208,7 +214,6 @@ class WBFM_stereo(gr.top_block, Qt.QWidget):
 
 
 
-
 def main(top_block_cls=WBFM_stereo, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -223,6 +228,9 @@ def main(top_block_cls=WBFM_stereo, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -232,11 +240,6 @@ def main(top_block_cls=WBFM_stereo, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':
