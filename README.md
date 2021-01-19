@@ -11,8 +11,8 @@ The package uses three separate processes which **run concurrently:** station co
 
 There are two branches of this repository:
 
-* `main` (the default) contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto.
-* `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device.
+* `main` (the default) contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load when used on a Raspberry Pi computer.
+* `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
 Instructions are given below to load the desired version.
 
@@ -38,10 +38,9 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. If you want the 3.9 version, enter  
-```
-git checkout maint-3.9 
-```
+5. If you want the 3.9 version, enter:  
+    cd ~/gr-control  
+    git checkout maint-3.9  
 6. For version 3.8, load and build [gr-guiextra](https://github.com/ghostop14/gr-guiextra).  
 7. For version 3.8, load and build `gr-iio` as follows:
 
@@ -158,5 +157,4 @@ cd ~/gr-control/Transmitters
     `python3 -u NFM_xmt.py`  
     `python3 -u SSB_xmt.py`  
 4. A new window will open showing an Audio Gain control as well as a frequency spectrum display. The NFM_xmt screen also has a selector for PL tones. Using a tone of 0.0 turns off the PL.
-
 
