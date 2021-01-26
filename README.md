@@ -9,9 +9,10 @@ The package uses three separate processes which **run concurrently:** station co
 
 ## Versions
 
-There are two branches of this repository:
+There are three branches of this repository:
 
-* `main` (the default) contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load when used on a Raspberry Pi computer.
+* `main` (the default) is the development branch for software not yet put into the maint branchs.
+* `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load when used on a Raspberry Pi computer.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
 Instructions are given below to load the desired version.
@@ -38,9 +39,9 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. If you want the 3.9 version, enter:  
+5. For the 3.8 version, enter:  
     cd ~/gr-control  
-    git checkout maint-3.9  
+    git checkout maint-3.8  
 6. For version 3.8, load and build [gr-guiextra](https://github.com/ghostop14/gr-guiextra).  
 7. For version 3.8, load and build `gr-iio` as follows:
 
@@ -125,7 +126,6 @@ Currently there are three programs for receiving:
 * Narrow Band FM - `NFM_rcv`
 * Single Sideband - `SSB_rcv`
 * Broadcast FM (mono) - `WBFM_rcv` for 3.8
-* Broadcast FM Stereo - `WBFM_stereo` for 3.9
 
 1. Open a second terminal window.
 2. Go to the gr-control/Receivers folder.  
@@ -136,7 +136,6 @@ cd ~/gr-control/Receivers
     `python3 -u NFM_rcv.py`   
     `python3 -u SSB_rcv.py`  
     `python3 -u WBFM_rcv.py`  for 3.8  
-    `python3 -u WBFM_stereo.py`  for 3.9  
 4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
 
 If you get lots of audio underruns (`aU`) on your terminal, refer to [Working with ALSA and Pulse Audio](https://wiki.gnuradio.org/index.php/ALSAPulseAudio).
