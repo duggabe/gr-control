@@ -1,6 +1,7 @@
 options:
   parameters:
     author: Barry Duggan
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -22,7 +23,6 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: SSB_xmt
-    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -43,7 +43,7 @@ blocks:
     samp_rate: samp_rate
     type: complex_band_pass
     width: '100'
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
@@ -67,7 +67,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '576000'
+    value: '768000'
   states:
     bus_sink: false
     bus_source: false
@@ -82,7 +82,7 @@ blocks:
     gui_hint: ''
     label: Audio gain
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.1'
@@ -129,7 +129,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 204.0]
+    coordinate: [40, 204.0]
     rotation: 0
     state: enabled
 - name: blocks_float_to_complex_0
@@ -181,7 +181,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 372.0]
+    coordinate: [432, 396.0]
     rotation: 0
     state: true
 - name: fft_filter_xxx_0_0
@@ -201,7 +201,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 356.0]
+    coordinate: [208, 380.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -222,7 +222,7 @@ blocks:
     autoscale: 'False'
     average: '1.0'
     axislabels: 'True'
-    bw: samp_rate
+    bw: '16000'
     color1: '"blue"'
     color10: '"dark blue"'
     color2: '"red"'
@@ -256,6 +256,7 @@ blocks:
     minoutbuf: '0'
     name: '""'
     nconnections: '1'
+    norm_window: 'False'
     showports: 'False'
     tr_chan: '0'
     tr_level: '0.0'
@@ -274,14 +275,14 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
     ymax: '10'
     ymin: '-140'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 440.0]
+    coordinate: [408, 472.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
@@ -307,7 +308,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 372.0]
+    coordinate: [24, 396.0]
     rotation: 0
     state: true
 - name: zeromq_pub_sink_0
@@ -316,8 +317,9 @@ blocks:
     address: tcp://127.0.0.1:49203
     affinity: ''
     alias: ''
-    comment: USRP sample rate = 576kHz
+    comment: USRP sample rate = 768kHz
     hwm: '-1'
+    key: ''
     pass_tags: 'False'
     timeout: '100'
     type: complex
@@ -326,7 +328,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 356.0]
+    coordinate: [608, 372.0]
     rotation: 0
     state: true
 

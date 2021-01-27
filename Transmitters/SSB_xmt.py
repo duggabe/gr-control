@@ -8,7 +8,7 @@
 # Title: SSB_xmt
 # Author: Barry Duggan
 # Description: SSB transmitter
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.9.0.0
 
 from distutils.version import StrictVersion
 
@@ -31,6 +31,7 @@ from gnuradio import audio
 from gnuradio import blocks
 from gnuradio import filter
 from gnuradio import gr
+from gnuradio.fft import window
 import sys
 import signal
 from argparse import ArgumentParser
@@ -38,13 +39,16 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
+from PyQt5 import QtCore
+
+
 
 from gnuradio import qtgui
 
 class SSB_xmt(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "SSB_xmt")
+        gr.top_block.__init__(self, "SSB_xmt", catch_exceptions=True)
         Qt.QWidget.__init__(self)
         self.setWindowTitle("SSB_xmt")
         qtgui.util.check_set_qss()
@@ -79,23 +83,24 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         ##################################################
         self.samp_rate = samp_rate = 48000
         self.volume = volume = 0.8
-        self.usrp_rate = usrp_rate = 576000
-        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, 300, 5000, 100, firdes.WIN_HAMMING, 6.76)
+        self.usrp_rate = usrp_rate = 768000
+        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, 300, 5000, 100, window.WIN_HAMMING, 6.76)
 
         ##################################################
         # Blocks
         ##################################################
         self._volume_range = Range(0, 10.0, 0.1, 0.8, 200)
-        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Audio gain', "counter_slider", float)
+        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Audio gain', "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._volume_win)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
-            firdes.WIN_BLACKMAN_hARRIS, #wintype
+            window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
-            samp_rate, #bw
+            16000, #bw
             "", #name
-            1
+            1,
+            None # parent
         )
         self.qtgui_freq_sink_x_0.set_update_time(0.10)
         self.qtgui_freq_sink_x_0.set_y_axis(-140, 10)
@@ -106,6 +111,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         self.qtgui_freq_sink_x_0.set_fft_average(1.0)
         self.qtgui_freq_sink_x_0.enable_axis_labels(True)
         self.qtgui_freq_sink_x_0.enable_control_panel(False)
+        self.qtgui_freq_sink_x_0.set_fft_window_normalized(False)
 
 
 
@@ -154,6 +160,9 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "SSB_xmt")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_samp_rate(self):
@@ -162,7 +171,6 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_repeat_0_0.set_interpolation((int)(self.usrp_rate/self.samp_rate))
-        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
 
     def get_volume(self):
         return self.volume
@@ -188,7 +196,6 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
 
 
 
-
 def main(top_block_cls=SSB_xmt, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -203,6 +210,9 @@ def main(top_block_cls=SSB_xmt, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -212,11 +222,6 @@ def main(top_block_cls=SSB_xmt, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':

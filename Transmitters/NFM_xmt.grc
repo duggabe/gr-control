@@ -1,6 +1,7 @@
 options:
   parameters:
     author: Barry Duggan
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -22,7 +23,6 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: NFM_xmt
-    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -32,18 +32,6 @@ options:
     state: enabled
 
 blocks:
-- name: if_rate
-  id: variable
-  parameters:
-    comment: ''
-    value: int(usrp_rate/3)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [16, 124.0]
-    rotation: 0
-    state: true
 - name: pl_freq
   id: variable_qtgui_chooser
   parameters:
@@ -97,7 +85,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '576000'
+    value: '768000'
   states:
     bus_sink: false
     bus_source: false
@@ -112,7 +100,7 @@ blocks:
     gui_hint: ''
     label: Audio gain
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.1'
@@ -137,7 +125,7 @@ blocks:
     max_dev: 5e3
     maxoutbuf: '0'
     minoutbuf: '0'
-    quad_rate: if_rate
+    quad_rate: samp_rate
     tau: 75e-6
   states:
     bus_sink: false
@@ -152,7 +140,7 @@ blocks:
     affinity: ''
     alias: ''
     amp: '0.15'
-    comment: PL tone gen
+    comment: ''
     freq: pl_freq
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -178,13 +166,13 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_outputs: '1'
-    ok_to_block: 'False'
+    ok_to_block: 'True'
     samp_rate: '48000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 196.0]
+    coordinate: [32, 196.0]
     rotation: 0
     state: enabled
 - name: band_pass_filter_0
@@ -204,7 +192,7 @@ blocks:
     samp_rate: samp_rate
     type: fir_filter_fff
     width: '200'
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
@@ -254,7 +242,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    interp: (int)(usrp_rate/if_rate)
+    interp: (int)(usrp_rate/samp_rate)
     maxoutbuf: '0'
     minoutbuf: '0'
     type: complex
@@ -279,10 +267,10 @@ blocks:
     interp: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
-    samp_rate: if_rate
+    samp_rate: samp_rate
     type: fir_filter_ccf
     width: '2000'
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
@@ -295,7 +283,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    bw: if_rate
+    bw: samp_rate
     comment: ''
     fc: '0'
     fftsize: '1024'
@@ -311,12 +299,12 @@ blocks:
     showports: 'False'
     showrf: 'True'
     type: complex
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 428.0]
+    coordinate: [392, 412.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
@@ -342,7 +330,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 356.0]
+    coordinate: [16, 356.0]
     rotation: 0
     state: true
 - name: zeromq_pub_sink_0
@@ -351,8 +339,9 @@ blocks:
     address: tcp://127.0.0.1:49203
     affinity: ''
     alias: ''
-    comment: USRP sample rate = 576kHz
+    comment: USRP sample rate = 768kHz
     hwm: '-1'
+    key: ''
     pass_tags: 'False'
     timeout: '100'
     type: complex
@@ -361,7 +350,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 340.0]
+    coordinate: [576, 332.0]
     rotation: 0
     state: true
 

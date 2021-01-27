@@ -1,16 +1,17 @@
 options:
   parameters:
     author: Barry Duggan
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
     copyright: ''
-    description: Broadcast FM
+    description: Broadcast FM stereo
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: WBFM_rcv
+    id: WBFM_stereo
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -21,8 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: WBFM_rcv
-    window_size: ''
+    title: WBFM_stereo
   states:
     bus_sink: false
     bus_source: false
@@ -44,25 +44,6 @@ blocks:
     coordinate: [456, 12.0]
     rotation: 0
     state: true
-- name: channel_filter
-  id: variable_band_pass_filter_taps
-  parameters:
-    beta: '6.76'
-    comment: ''
-    gain: '1.0'
-    high_cutoff_freq: '80000'
-    low_cutoff_freq: '-80000'
-    samp_rate: demod_rate
-    type: complex_band_pass
-    width: '20000'
-    win: firdes.WIN_HAMMING
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [816, 12.0]
-    rotation: 0
-    state: true
 - name: demod_rate
   id: variable
   parameters:
@@ -79,7 +60,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '3'
+    value: '2'
   states:
     bus_sink: false
     bus_source: false
@@ -91,7 +72,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '576000'
+    value: '768000'
   states:
     bus_sink: false
     bus_source: false
@@ -106,7 +87,7 @@ blocks:
     gui_hint: ''
     label: Squelch
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '-100'
     step: '5'
@@ -127,7 +108,7 @@ blocks:
     gui_hint: ''
     label: Volume
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.05'
@@ -155,16 +136,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 204.0]
+    coordinate: [504, 188.0]
     rotation: 0
     state: enabled
-- name: analog_wfm_rcv_0
-  id: analog_wfm_rcv
+- name: analog_wfm_rcv_pll_0
+  id: analog_wfm_rcv_pll
   parameters:
     affinity: ''
     alias: ''
     audio_decimation: audio_decim
     comment: ''
+    deemph_tau: 75e-6
     maxoutbuf: '0'
     minoutbuf: '0'
     quad_rate: (int)(samp_rate/rf_decim)
@@ -172,7 +154,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 204.0]
+    coordinate: [680, 180.0]
     rotation: 0
     state: true
 - name: audio_sink_0
@@ -182,16 +164,34 @@ blocks:
     alias: ''
     comment: ''
     device_name: ''
-    num_inputs: '1'
+    num_inputs: '2'
     ok_to_block: 'False'
     samp_rate: '48000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 212.0]
+    coordinate: [1072, 184.0]
     rotation: 0
     state: true
+- name: blocks_multiply_const_vxx_0_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: volume
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [896, 180.0]
+    rotation: 0
+    state: enabled
 - name: blocks_multiply_const_vxx_0_0_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -207,29 +207,33 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 212.0]
+    coordinate: [896, 236.0]
     rotation: 0
     state: enabled
-- name: fft_filter_xxx_0_0
-  id: fft_filter_xxx
+- name: filter_fft_low_pass_filter_0
+  id: filter_fft_low_pass_filter
   parameters:
     affinity: ''
     alias: ''
+    beta: '6.76'
     comment: ''
+    cutoff_freq: '90000'
     decim: rf_decim
+    gain: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
     nthreads: '1'
-    samp_delay: '0'
-    taps: channel_filter
+    samp_rate: samp_rate
     type: ccc
+    width: '20000'
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [240, 196.0]
+    coordinate: [312, 140.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: qtgui_waterfall_sink_x_0
   id: qtgui_waterfall_sink_x
   parameters:
@@ -283,12 +287,12 @@ blocks:
     showports: 'False'
     type: complex
     update_time: '0.10'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 288.0]
+    coordinate: [520, 280.0]
     rotation: 0
     state: true
 - name: zeromq_sub_source_0
@@ -297,8 +301,9 @@ blocks:
     address: tcp://127.0.0.1:49201
     affinity: ''
     alias: ''
-    comment: USRP sample rate = 576kHz
+    comment: USRP sample rate = 768kHz
     hwm: '-1'
+    key: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     pass_tags: 'False'
@@ -309,17 +314,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 196.0]
+    coordinate: [72, 172.0]
     rotation: 0
     state: true
 
 connections:
-- [analog_simple_squelch_cc_0, '0', analog_wfm_rcv_0, '0']
-- [analog_wfm_rcv_0, '0', blocks_multiply_const_vxx_0_0_0, '0']
-- [blocks_multiply_const_vxx_0_0_0, '0', audio_sink_0, '0']
-- [fft_filter_xxx_0_0, '0', analog_simple_squelch_cc_0, '0']
-- [fft_filter_xxx_0_0, '0', qtgui_waterfall_sink_x_0, '0']
-- [zeromq_sub_source_0, '0', fft_filter_xxx_0_0, '0']
+- [analog_simple_squelch_cc_0, '0', analog_wfm_rcv_pll_0, '0']
+- [analog_wfm_rcv_pll_0, '0', blocks_multiply_const_vxx_0_0, '0']
+- [analog_wfm_rcv_pll_0, '1', blocks_multiply_const_vxx_0_0_0, '0']
+- [blocks_multiply_const_vxx_0_0, '0', audio_sink_0, '0']
+- [blocks_multiply_const_vxx_0_0_0, '0', audio_sink_0, '1']
+- [filter_fft_low_pass_filter_0, '0', analog_simple_squelch_cc_0, '0']
+- [filter_fft_low_pass_filter_0, '0', qtgui_waterfall_sink_x_0, '0']
+- [zeromq_sub_source_0, '0', filter_fft_low_pass_filter_0, '0']
 
 metadata:
   file_format: 1

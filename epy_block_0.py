@@ -7,7 +7,7 @@ from gnuradio import gr
 import time
 import pmt
 
-class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
+class blk(gr.sync_block):
     """
     reads input from a message port
     generates control messages
@@ -21,86 +21,108 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.message_port_register_out(pmt.intern('tx_mute'))
         self.message_port_register_out(pmt.intern('rx_led'))
         self.message_port_register_out(pmt.intern('ant_sw'))
+        self.message_port_register_out(pmt.intern('sw_cmd'))
         self.message_port_register_out(pmt.intern('pa_sw'))
         self.message_port_register_out(pmt.intern('rx_mute'))
         self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)
 
     def handle_msg(self, msg):
+        _debug = 0          # set to zero to turn off diagnostics
+
         try:
             new_val = pmt.to_python(pmt.cdr(msg))
         except Exception as e:
             gr.log.error("Error with message conversion: %s" % str(e))
-        # print (new_val)
-        if (new_val > 0):
-                # print ("switching to transmit")
+        if (_debug):
+            print ("new_val =", new_val)
+        if (new_val == 1):
 
-                # mute receive
-                self.message_port_pub(pmt.intern('rx_mute'), pmt.to_pmt(True))
+            # (1) mute receive
+            if (_debug):
+                print ("t1")
+            self.message_port_pub(pmt.intern('rx_mute'), pmt.to_pmt(True))
 
-                # turn off rcv LED
-                self.message_port_pub(pmt.intern('rx_led'),
-                    pmt.cons(pmt.intern('pressed'),
-                    pmt.from_bool(False)))
+            # (2) turn off rcv LED
+            if (_debug):
+                print ("t2")
+            self.message_port_pub(pmt.intern('rx_led'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_bool(False)))
 
-                # switch antenna from rcv to xmt
-                # turn on GPIO pin
+            # (3) send message to relay_sequencer
+            if (_debug):
+                print ("t3")
+            self.message_port_pub(pmt.intern('sw_cmd'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_long(1)))
 
-                # turn on Antenna LED
-                self.message_port_pub(pmt.intern('ant_sw'),
-                    pmt.cons(pmt.intern('pressed'),
-                    pmt.from_bool(True)))
+            # (4) turn on Antenna LED
+            if (_debug):
+                print ("t4")
+            self.message_port_pub(pmt.intern('ant_sw'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_bool(True)))
 
-                # delay 10 ms
-                time.sleep (0.01)
+        elif (new_val == 3):
 
-                # turn on power amp
-                # turn on GPIO pin
+            # (9) turn on Amp LED
+            if (_debug):
+                print ("t9")
+            self.message_port_pub(pmt.intern('pa_sw'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_bool(True)))
 
-                # turn on Amp LED
-                self.message_port_pub(pmt.intern('pa_sw'),
-                    pmt.cons(pmt.intern('pressed'),
-                    pmt.from_bool(True)))
+            # (10) delay 10 ms
+            time.sleep (0.01)
 
-                # delay 10 ms
-                time.sleep (0.01)
+            # (11) unmute transmit (enable Selector)
+            if (_debug):
+                print ("t11")
+            self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(True))
 
-                # unmute transmit (enable Selector)
-                self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(True))
+        elif (new_val == 0):
 
-        else:
-                # print ("switching to receive")
+            # (11) mute transmit (disable Selector)
+            if (_debug):
+                print ("r11")
+            self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(False))
 
-                # mute transmit (disable Selector)
-                self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(False))
+            # (10) send message to relay_sequencer
+            if (_debug):
+                print ("r10")
+            self.message_port_pub(pmt.intern('sw_cmd'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_long(0)))
 
-                # turn off power amp
-                # turn off GPIO pin
+            # (9) turn off Amp LED
+            if (_debug):
+                print ("r9")
+            self.message_port_pub(pmt.intern('pa_sw'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_bool(False)))
 
-                # turn off Amp LED
-                self.message_port_pub(pmt.intern('pa_sw'),
-                    pmt.cons(pmt.intern('pressed'),
-                    pmt.from_bool(False)))
+        elif (new_val == 2):
 
-                # delay 10 ms
-                time.sleep (0.01)
+            # (4) turn off Antenna LED
+            if (_debug):
+                print ("r4")
+            self.message_port_pub(pmt.intern('ant_sw'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_bool(False)))
 
-                # switch antenna from xmt to rcv
-                # turn off GPIO pin
+            # (3) delay 10 ms
+            time.sleep (0.01)
 
-                # turn off Antenna LED
-                self.message_port_pub(pmt.intern('ant_sw'),
-                    pmt.cons(pmt.intern('pressed'),
-                    pmt.from_bool(False)))
+            # (2) turn on rcv LED
+            if (_debug):
+                print ("r2")
+            self.message_port_pub(pmt.intern('rx_led'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_bool(True)))
 
-                # delay 10 ms
-                time.sleep (0.01)
-
-                # unmute receive
-                self.message_port_pub(pmt.intern('rx_mute'), pmt.to_pmt(False))
-
-                # turn on rcv LED
-                self.message_port_pub(pmt.intern('rx_led'),
-                    pmt.cons(pmt.intern('pressed'),
-                    pmt.from_bool(True)))
+            # unmute receive
+            if (_debug):
+                print ("r1")
+            self.message_port_pub(pmt.intern('rx_mute'), pmt.to_pmt(False))
 
 

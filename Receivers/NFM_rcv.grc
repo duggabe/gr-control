@@ -1,6 +1,7 @@
 options:
   parameters:
     author: Barry Duggan
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -22,7 +23,6 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: NFM_rcv
-    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -43,7 +43,7 @@ blocks:
     samp_rate: samp_rate
     type: complex_band_pass
     width: '200'
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
@@ -55,7 +55,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '3'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -67,7 +67,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '576000'
+    value: '768000'
   states:
     bus_sink: false
     bus_source: false
@@ -82,7 +82,7 @@ blocks:
     gui_hint: ''
     label: Squelch
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '-100'
     step: '5'
@@ -103,7 +103,7 @@ blocks:
     gui_hint: ''
     label: Volume
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.05'
@@ -167,7 +167,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 324.0]
+    coordinate: [776, 324.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0_0
@@ -261,7 +261,7 @@ blocks:
     showports: 'False'
     type: complex
     update_time: '0.10'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
@@ -275,8 +275,9 @@ blocks:
     address: tcp://127.0.0.1:49201
     affinity: ''
     alias: ''
-    comment: USRP sample rate = 576kHz
+    comment: USRP sample rate = 768kHz
     hwm: '-1'
+    key: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     pass_tags: 'False'
@@ -287,7 +288,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 204.0]
+    coordinate: [24, 196.0]
     rotation: 0
     state: true
 
