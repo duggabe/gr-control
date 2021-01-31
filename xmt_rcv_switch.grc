@@ -484,7 +484,7 @@ blocks:
     clock_source7: ''
     comment: ''
     dev_addr: '""'
-    dev_args: '"send_buff_size=1024"'
+    dev_args: '"send_frame_size=8192,num_send_frames=128,master_clock_rate=" + str(samp_rate*4)'
     gain0: tx_gain
     gain1: '0'
     gain10: '0'

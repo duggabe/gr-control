@@ -5,13 +5,11 @@ This package contains GNU Radio flowgraphs for transmitters and receivers. They 
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
 
-The package uses three separate processes which **run concurrently:** station control, a receiver, and a transmitter. They all can be on the same computer or on two or three separate computers according to the users needs.
-
 ## Versions
 
 There are three branches of this repository:
 
-* `main` (the default) is the development branch for software not yet put into the maint branches.
+* `main` (the default) is the development branch for software not yet put into the maint branches. An additional process is added to implement the relay control using a Raspberry Pi computer.
 * `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load when used on a Raspberry Pi computer.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
@@ -19,7 +17,7 @@ Near the top of this page is a pull-down to select the branches.
 
 ![screen shot](./branch_selection.png "git branch selection")
 
-Choose the branch you want, then continue with the instuctions for that branch.
+Choose the branch you want, then continue with the README.md instuctions **for that branch**.
 
 ## Installation
 
@@ -47,18 +45,12 @@ git clone https://github.com/duggabe/gr-control.git
 ```
 cd ~/gr-control
 ```
-6. If you want the 3.8 version, enter:  
-```
-git checkout maint-3.8
-```
-7. If you want the 3.9 version, enter:  
-```
-git checkout maint-3.9
-```
+6. If you want the `maint-3.8` version, see the branch selection instructions above.
+7. If you want the `maint-3.9` version, see the branch selection instructions above.
 
 ## Operation
 
-The package uses three separate processes. They all can be on the same computer or on two or three separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
+The package uses four separate processes. They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
 ### Data Flow Description
 
@@ -69,6 +61,8 @@ The package uses three separate processes. They all can be on the same computer 
 
 ### Station Control Module
 
+#### Main control module
+
 1. Open a terminal window.
 2. Go to the gr-control folder.  
 ```
@@ -78,13 +72,14 @@ cd ~/gr-control
 ```
 python3 -u xmt_rcv_switch.py
 ```
-3. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence:
+3. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
   * mute receiver
   * turn off rcv LED
-  * switch antenna from rcv to xmt (once implemented)
   * turn on Antenna LED
-  * delay 10 ms
-  * turn on power amp (once implemented)
+  * switch antenna from rcv to xmt
+  * delay 100 ms
+  * turn on power amp
+  * delay 250 ms
   * turn on Amp LED
   * delay 10 ms
   * unmute transmitter
@@ -92,6 +87,16 @@ python3 -u xmt_rcv_switch.py
 Here is a screen shot:
 
 ![screen shot](./xmt_rcv_switch_out.png "gr-control Station Control")
+
+#### Raspberry Pi relay module
+
+1. Open a terminal window on the Raspberry Pi.
+2. Go to the folder where `relay_sequencer.py` is stored.
+3. Execute `relay_sequencer.py`.  
+```
+python3 -u `relay_sequencer.py`
+```
+4. The program displays the PUB and SUB socket addresses. There is no user interface.
 
 ### Receiver
 

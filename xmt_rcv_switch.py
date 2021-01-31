@@ -147,7 +147,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_rx_agc(False, 0)
         self.uhd_usrp_source_0.set_normalized_gain(gain, 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("", "send_buff_size=1024")),
+            ",".join(("", "send_frame_size=8192,num_send_frames=128,master_clock_rate=" + str(samp_rate*4))),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
