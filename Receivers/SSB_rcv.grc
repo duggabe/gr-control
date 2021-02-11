@@ -84,18 +84,6 @@ blocks:
     coordinate: [272, 12.0]
     rotation: 0
     state: true
-- name: decim
-  id: variable
-  parameters:
-    comment: ''
-    value: (int)(samp_rate/audio_rate)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [184, 140.0]
-    rotation: 0
-    state: true
 - name: reverse
   id: variable_qtgui_chooser
   parameters:
@@ -126,6 +114,18 @@ blocks:
     coordinate: [568, 12.0]
     rotation: 0
     state: enabled
+- name: rs_ratio
+  id: variable
+  parameters:
+    comment: ''
+    value: '0.98'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 140.0]
+    rotation: 0
+    state: true
 - name: samp_rate
   id: variable
   parameters:
@@ -178,7 +178,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 188.0]
+    coordinate: [640, 188.0]
     rotation: 0
     state: enabled
 - name: analog_sig_source_x_0_0
@@ -200,7 +200,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 404.0]
+    coordinate: [648, 476.0]
     rotation: 0
     state: enabled
 - name: audio_sink_0_0
@@ -217,7 +217,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 340.0]
+    coordinate: [1240, 364.0]
     rotation: 0
     state: enabled
 - name: blocks_add_xx_0
@@ -235,7 +235,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 248.0]
+    coordinate: [1088, 248.0]
     rotation: 0
     state: true
 - name: blocks_complex_to_float_0
@@ -251,7 +251,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 320.0]
+    coordinate: [672, 352.0]
     rotation: 0
     state: true
 - name: blocks_multiply_const_vxx_0
@@ -269,7 +269,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 260.0]
+    coordinate: [1192, 260.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0_0
@@ -287,8 +287,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 348.0]
-    rotation: 180
+    coordinate: [1004.0, 360]
+    rotation: 90
     state: enabled
 - name: blocks_multiply_xx_0
   id: blocks_multiply_xx
@@ -305,7 +305,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 232.0]
+    coordinate: [888, 232.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_xx_0_0
@@ -323,7 +323,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 416.0]
+    coordinate: [896, 488.0]
     rotation: 0
     state: enabled
 - name: fft_filter_xxx_0_0
@@ -332,7 +332,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    decim: decim
+    decim: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
     nthreads: '1'
@@ -346,6 +346,24 @@ blocks:
     coordinate: [256, 316.0]
     rotation: 0
     state: enabled
+- name: mmse_resampler_xx_0
+  id: mmse_resampler_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_shift: '0'
+    resamp_ratio: ((samp_rate/48000)*rs_ratio)
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [464, 336.0]
+    rotation: 0
+    state: true
 - name: qtgui_waterfall_sink_x_0
   id: qtgui_waterfall_sink_x
   parameters:
@@ -440,7 +458,8 @@ connections:
 - [blocks_multiply_const_vxx_0_0, '0', blocks_add_xx_0, '1']
 - [blocks_multiply_xx_0, '0', blocks_add_xx_0, '0']
 - [blocks_multiply_xx_0_0, '0', blocks_multiply_const_vxx_0_0, '0']
-- [fft_filter_xxx_0_0, '0', blocks_complex_to_float_0, '0']
+- [fft_filter_xxx_0_0, '0', mmse_resampler_xx_0, '0']
+- [mmse_resampler_xx_0, '0', blocks_complex_to_float_0, '0']
 - [zeromq_sub_source_0, '0', fft_filter_xxx_0_0, '0']
 - [zeromq_sub_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 

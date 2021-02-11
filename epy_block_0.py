@@ -18,6 +18,7 @@ class blk(gr.sync_block):
             in_sig=None,
             out_sig=None)
         self.message_port_register_in(pmt.intern('msg_in'))
+        self.message_port_register_out(pmt.intern('burst'))
         self.message_port_register_out(pmt.intern('tx_mute'))
         self.message_port_register_out(pmt.intern('rx_led'))
         self.message_port_register_out(pmt.intern('ant_sw'))
@@ -80,7 +81,24 @@ class blk(gr.sync_block):
                 print ("t11")
             self.message_port_pub(pmt.intern('tx_mute'), pmt.to_pmt(True))
 
+            # (12) send message to burst tagger
+            if (_debug):
+                print ("t12")
+            self.message_port_pub(pmt.intern('burst'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_long(1)))
+
         elif (new_val == 0):
+
+            # (12) send message to burst tagger
+            if (_debug):
+                print ("t12")
+            self.message_port_pub(pmt.intern('burst'),
+                pmt.cons(pmt.intern('pressed'),
+                pmt.from_long(0)))
+
+            # (11.5) delay 5 ms
+            time.sleep (0.005)
 
             # (11) mute transmit (disable Selector)
             if (_debug):

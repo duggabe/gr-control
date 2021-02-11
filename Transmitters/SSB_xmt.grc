@@ -51,6 +51,18 @@ blocks:
     coordinate: [416, 12.0]
     rotation: 0
     state: true
+- name: rs_ratio
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.0145'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 12.0]
+    rotation: 0
+    state: true
 - name: samp_rate
   id: variable
   parameters:
@@ -166,24 +178,6 @@ blocks:
     coordinate: [272, 204.0]
     rotation: 0
     state: enabled
-- name: blocks_repeat_0_0
-  id: blocks_repeat
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    interp: (int)(usrp_rate/samp_rate)
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [432, 396.0]
-    rotation: 0
-    state: true
 - name: fft_filter_xxx_0_0
   id: fft_filter_xxx
   parameters:
@@ -201,9 +195,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 380.0]
+    coordinate: [208, 356.0]
     rotation: 0
     state: enabled
+- name: mmse_resampler_xx_0
+  id: mmse_resampler_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_shift: '0'
+    resamp_ratio: 1.0/((usrp_rate/samp_rate)*rs_ratio)
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 376.0]
+    rotation: 0
+    state: true
 - name: qtgui_freq_sink_x_0
   id: qtgui_freq_sink_x
   parameters:
@@ -282,7 +294,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 472.0]
+    coordinate: [408, 516.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
@@ -308,7 +320,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 396.0]
+    coordinate: [48, 372.0]
     rotation: 0
     state: true
 - name: zeromq_pub_sink_0
@@ -328,7 +340,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 372.0]
+    coordinate: [664, 380.0]
     rotation: 0
     state: true
 
@@ -337,9 +349,9 @@ connections:
 - [audio_source_0, '0', blocks_multiply_const_vxx_0, '0']
 - [blocks_float_to_complex_0, '0', virtual_sink_0, '0']
 - [blocks_multiply_const_vxx_0, '0', blocks_float_to_complex_0, '0']
-- [blocks_repeat_0_0, '0', zeromq_pub_sink_0, '0']
-- [fft_filter_xxx_0_0, '0', blocks_repeat_0_0, '0']
+- [fft_filter_xxx_0_0, '0', mmse_resampler_xx_0, '0']
 - [fft_filter_xxx_0_0, '0', qtgui_freq_sink_x_0, '0']
+- [mmse_resampler_xx_0, '0', zeromq_pub_sink_0, '0']
 - [virtual_source_0, '0', fft_filter_xxx_0_0, '0']
 
 metadata:

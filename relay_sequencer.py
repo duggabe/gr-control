@@ -8,9 +8,6 @@
 # NOTES:
 #   1) Messages are received on the SUB socket and sent on the PUB socket.
 #   2) The SUB and PUB messages must be on separate port numbers.
-#   3) Using a relay board added on a Raspberry Pi computer, GPIO pins 17 and 27 are jumpered to the relay controls.
-    4) Put the IP address where the xmt_rcv_switch process is running in the SUB socket address.
-    5) Put the IP address of the Raspberry Pi in the PUB socket address.
 
 from gpiozero import LEDBoard
 import time
@@ -50,7 +47,7 @@ while True:
         if (new_val > 0):   #transmit
 
             # (5) switch antenna from rcv to xmt
-            leds.antenna.off()    # NOTE: off is on!
+            leds.antenna.off()    # NOTE: on is off!
             if (_debug):
                 print ("t5")
 
@@ -58,7 +55,7 @@ while True:
             time.sleep (0.1)
 
             # (7) turn on power amp
-            leds.pwr_amp.off()    # NOTE: off is on!
+            leds.pwr_amp.off()    # NOTE: on is off!
             if (_debug):
                 print ("t7")
 
@@ -73,7 +70,7 @@ while True:
         else:   # receive
 
             # (7) turn off power amp
-            leds.pwr_amp.on()    # NOTE: on is off!
+            leds.pwr_amp.on()
             if (_debug):
                 print ("r7")
 
@@ -81,7 +78,7 @@ while True:
             time.sleep (0.25)
 
             # (5) switch antenna from xmt to rcv
-            leds.antenna.on()    # NOTE: on is off!
+            leds.antenna.on()
             if (_debug):
                 print ("r5")
 

@@ -83,12 +83,12 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.samp_rate = samp_rate = 768000
-        self.audio_rate = audio_rate = 48000
         self.volume = volume = 0.05
+        self.rs_ratio = rs_ratio = 0.98
         self.reverse = reverse = -1
-        self.decim = decim = (int)(samp_rate/audio_rate)
         self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, 300, 5000, 100, window.WIN_HAMMING, 6.76)
         self.bfo = bfo = 1500
+        self.audio_rate = audio_rate = 48000
 
         ##################################################
         # Blocks
@@ -159,7 +159,8 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
-        self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(decim, channel_filter, 1)
+        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, ((samp_rate/48000)*rs_ratio))
+        self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_multiply_xx_0_0 = blocks.multiply_vff(1)
         self.blocks_multiply_xx_0 = blocks.multiply_vff(1)
@@ -185,7 +186,8 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.blocks_multiply_xx_0_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
-        self.connect((self.fft_filter_xxx_0_0, 0), (self.blocks_complex_to_float_0, 0))
+        self.connect((self.fft_filter_xxx_0_0, 0), (self.mmse_resampler_xx_0, 0))
+        self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.fft_filter_xxx_0_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
 
@@ -203,17 +205,8 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.set_decim((int)(self.samp_rate/self.audio_rate))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
-
-    def get_audio_rate(self):
-        return self.audio_rate
-
-    def set_audio_rate(self, audio_rate):
-        self.audio_rate = audio_rate
-        self.set_decim((int)(self.samp_rate/self.audio_rate))
-        self.analog_sig_source_x_0.set_sampling_freq(self.audio_rate)
-        self.analog_sig_source_x_0_0.set_sampling_freq(self.audio_rate)
+        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
 
     def get_volume(self):
         return self.volume
@@ -222,6 +215,13 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.volume = volume
         self.blocks_multiply_const_vxx_0.set_k(self.volume)
 
+    def get_rs_ratio(self):
+        return self.rs_ratio
+
+    def set_rs_ratio(self, rs_ratio):
+        self.rs_ratio = rs_ratio
+        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
+
     def get_reverse(self):
         return self.reverse
 
@@ -229,12 +229,6 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.reverse = reverse
         self._reverse_callback(self.reverse)
         self.blocks_multiply_const_vxx_0_0.set_k(self.reverse)
-
-    def get_decim(self):
-        return self.decim
-
-    def set_decim(self, decim):
-        self.decim = decim
 
     def get_channel_filter(self):
         return self.channel_filter
@@ -250,6 +244,14 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.bfo = bfo
         self.analog_sig_source_x_0.set_frequency(self.bfo)
         self.analog_sig_source_x_0_0.set_frequency(self.bfo)
+
+    def get_audio_rate(self):
+        return self.audio_rate
+
+    def set_audio_rate(self, audio_rate):
+        self.audio_rate = audio_rate
+        self.analog_sig_source_x_0.set_sampling_freq(self.audio_rate)
+        self.analog_sig_source_x_0_0.set_sampling_freq(self.audio_rate)
 
 
 

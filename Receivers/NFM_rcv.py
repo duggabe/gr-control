@@ -84,7 +84,8 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate = 768000
         self.volume = volume = 0.05
         self.sq_lvl = sq_lvl = -50
-        self.rf_decim = rf_decim = 4
+        self.rs_ratio = rs_ratio = 1.0
+        self.rf_decim = rf_decim = (int)(samp_rate/48000)
         self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, -3000, 3000, 200, window.WIN_HAMMING, 6.76)
 
         ##################################################
@@ -131,8 +132,10 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
-        self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(rf_decim, channel_filter, 1)
+        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, ((samp_rate/48000)*rs_ratio))
+        self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, 48000,True)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
         self.audio_sink_0 = audio.sink(48000, '', False)
         self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
@@ -149,9 +152,11 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.analog_nbfm_rx_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
-        self.connect((self.analog_simple_squelch_cc_0, 0), (self.analog_nbfm_rx_0, 0))
+        self.connect((self.analog_simple_squelch_cc_0, 0), (self.mmse_resampler_xx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.audio_sink_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.analog_nbfm_rx_0, 0))
         self.connect((self.fft_filter_xxx_0_0, 0), (self.analog_simple_squelch_cc_0, 0))
+        self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_throttle_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.fft_filter_xxx_0_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
 
@@ -169,6 +174,8 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_rf_decim((int)(self.samp_rate/48000))
+        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
 
     def get_volume(self):
@@ -184,6 +191,13 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
     def set_sq_lvl(self, sq_lvl):
         self.sq_lvl = sq_lvl
         self.analog_simple_squelch_cc_0.set_threshold(self.sq_lvl)
+
+    def get_rs_ratio(self):
+        return self.rs_ratio
+
+    def set_rs_ratio(self, rs_ratio):
+        self.rs_ratio = rs_ratio
+        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
 
     def get_rf_decim(self):
         return self.rf_decim

@@ -25,6 +25,7 @@ if __name__ == '__main__':
 from PyQt5 import Qt
 from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import eng_notation
+from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import filter
 from gnuradio.filter import firdes
@@ -40,7 +41,7 @@ import time
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
-import epy_block_0
+import xmt_rcv_switch_epy_block_0 as epy_block_0  # embedded python block
 
 
 
@@ -85,15 +86,26 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.offset = offset = 0
         self.freq = freq = 144.92e6
         self.tx_freq = tx_freq = freq+offset
+        self.pressed = pressed = 0
+        self.variable_qtgui_label_1 = variable_qtgui_label_1 = pressed
         self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
-        self.tx_gain = tx_gain = 0.9
+        self.tx_gain = tx_gain = 0.5
         self.state = state = 0
         self.samp_rate = samp_rate = 768000
+        self.rs_ratio = rs_ratio = 1.0145
         self.gain = gain = 0.50
+        self.audio_rate = audio_rate = 48000
 
         ##################################################
         # Blocks
         ##################################################
+        self._tx_gain_range = Range(0, 1.00, 0.1, 0.5, 200)
+        self._tx_gain_win = RangeWidget(self._tx_gain_range, self.set_tx_gain, 'Tx gain', "slider", float, QtCore.Qt.Horizontal)
+        self.top_grid_layout.addWidget(self._tx_gain_win, 2, 0, 1, 3)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 3):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self._gain_range = Range(0, 1.00, 0.1, 0.50, 200)
         self._gain_win = RangeWidget(self._gain_range, self.set_gain, 'Rcv Gain', "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._gain_win, 1, 0, 1, 3)
@@ -107,8 +119,8 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self._freq_tool_bar.addWidget(self._freq_line_edit)
         self._freq_line_edit.returnPressed.connect(
             lambda: self.set_freq(eng_notation.str_to_num(str(self._freq_line_edit.text()))))
-        self.top_grid_layout.addWidget(self._freq_tool_bar, 2, 0, 1, 1)
-        for r in range(2, 3):
+        self.top_grid_layout.addWidget(self._freq_tool_bar, 9, 0, 1, 1)
+        for r in range(9, 10):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
@@ -116,6 +128,21 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://192.168.1.137:49204', 100, False)
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
         self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://192.168.1.194:49202', 100, True)
+        self._variable_qtgui_label_1_tool_bar = Qt.QToolBar(self)
+
+        if None:
+            self._variable_qtgui_label_1_formatter = None
+        else:
+            self._variable_qtgui_label_1_formatter = lambda x: str(x)
+
+        self._variable_qtgui_label_1_tool_bar.addWidget(Qt.QLabel('Trigger' + ": "))
+        self._variable_qtgui_label_1_label = Qt.QLabel(str(self._variable_qtgui_label_1_formatter(self.variable_qtgui_label_1)))
+        self._variable_qtgui_label_1_tool_bar.addWidget(self._variable_qtgui_label_1_label)
+        self.top_grid_layout.addWidget(self._variable_qtgui_label_1_tool_bar, 10, 0, 1, 1)
+        for r in range(10, 11):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self._variable_qtgui_label_0_tool_bar = Qt.QToolBar(self)
 
         if None:
@@ -126,13 +153,13 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self._variable_qtgui_label_0_tool_bar.addWidget(Qt.QLabel('Transmit Freq' + ": "))
         self._variable_qtgui_label_0_label = Qt.QLabel(str(self._variable_qtgui_label_0_formatter(self.variable_qtgui_label_0)))
         self._variable_qtgui_label_0_tool_bar.addWidget(self._variable_qtgui_label_0_label)
-        self.top_grid_layout.addWidget(self._variable_qtgui_label_0_tool_bar, 2, 2, 1, 1)
-        for r in range(2, 3):
+        self.top_grid_layout.addWidget(self._variable_qtgui_label_0_tool_bar, 9, 2, 1, 1)
+        for r in range(9, 10):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(('', "recv_buff_size=32768")),
+            ",".join(('', "recv_buff_size=16384", "master_clock_rate=30.72e6")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -147,7 +174,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_rx_agc(False, 0)
         self.uhd_usrp_source_0.set_normalized_gain(gain, 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("", "send_frame_size=8192,num_send_frames=128,master_clock_rate=" + str(samp_rate*4))),
+            ",".join(("send_frame_size=8192", "", "master_clock_rate=30.72e6")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -173,8 +200,8 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         _state_toggle_button.setColors("default","black","red","black")
         self.state = _state_toggle_button
 
-        self.top_grid_layout.addWidget(_state_toggle_button, 3, 2, 1, 1)
-        for r in range(3, 4):
+        self.top_grid_layout.addWidget(_state_toggle_button, 10, 2, 1, 1)
+        for r in range(10, 11):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
@@ -214,17 +241,17 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self._offset_combo_box.currentIndexChanged.connect(
             lambda i: self.set_offset(self._offset_options[i]))
         # Create the radio buttons
-        self.top_grid_layout.addWidget(self._offset_tool_bar, 2, 1, 1, 1)
-        for r in range(2, 3):
+        self.top_grid_layout.addWidget(self._offset_tool_bar, 9, 1, 1, 1)
+        for r in range(9, 10):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.low_pass_filter_0 = filter.fir_filter_ccf(
             1,
             firdes.low_pass(
-                1,
+                0.5,
                 samp_rate,
-                5000,
+                4000,
                 1000,
                 window.WIN_HAMMING,
                 6.76))
@@ -232,12 +259,18 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.blocks_selector_0 = blocks.selector(gr.sizeof_gr_complex*1,0,0)
         self.blocks_selector_0.set_enabled(False)
         self.blocks_mute_xx_0 = blocks.mute_cc(bool(False))
+        self.blocks_msgpair_to_var_0 = blocks.msg_pair_to_var(self.set_pressed)
+        self.blocks_burst_tagger_0 = blocks.burst_tagger(gr.sizeof_gr_complex)
+        self.blocks_burst_tagger_0.set_true_tag('tx_sob',True)
+        self.blocks_burst_tagger_0.set_false_tag('tx_eob',True)
+        self.analog_const_source_x_0 = analog.sig_source_s(0, analog.GR_CONST_WAVE, 0, 0, pressed)
 
 
 
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.epy_block_0, 'burst'), (self.blocks_msgpair_to_var_0, 'inpair'))
         self.msg_connect((self.epy_block_0, 'rx_mute'), (self.blocks_mute_xx_0, 'set_mute'))
         self.msg_connect((self.epy_block_0, 'tx_mute'), (self.blocks_selector_0, 'en'))
         self.msg_connect((self.epy_block_0, 'ant_sw'), (self.qtgui_ledindicator_0, 'state'))
@@ -246,9 +279,11 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.msg_connect((self.epy_block_0, 'sw_cmd'), (self.zeromq_pub_msg_sink_0, 'in'))
         self.msg_connect((self.state, 'state'), (self.epy_block_0, 'msg_in'))
         self.msg_connect((self.zeromq_sub_msg_source_0, 'out'), (self.epy_block_0, 'msg_in'))
+        self.connect((self.analog_const_source_x_0, 0), (self.blocks_burst_tagger_0, 1))
+        self.connect((self.blocks_burst_tagger_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.blocks_mute_xx_0, 0), (self.zeromq_pub_sink_0, 0))
         self.connect((self.blocks_selector_0, 0), (self.low_pass_filter_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.blocks_burst_tagger_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.blocks_mute_xx_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.blocks_selector_0, 0))
 
@@ -286,6 +321,21 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.set_variable_qtgui_label_0(self._variable_qtgui_label_0_formatter(self.tx_freq))
         self.uhd_usrp_sink_0.set_center_freq(self.tx_freq, 0)
 
+    def get_pressed(self):
+        return self.pressed
+
+    def set_pressed(self, pressed):
+        self.pressed = pressed
+        self.set_variable_qtgui_label_1(self._variable_qtgui_label_1_formatter(self.pressed))
+        self.analog_const_source_x_0.set_offset(self.pressed)
+
+    def get_variable_qtgui_label_1(self):
+        return self.variable_qtgui_label_1
+
+    def set_variable_qtgui_label_1(self, variable_qtgui_label_1):
+        self.variable_qtgui_label_1 = variable_qtgui_label_1
+        Qt.QMetaObject.invokeMethod(self._variable_qtgui_label_1_label, "setText", Qt.Q_ARG("QString", self.variable_qtgui_label_1))
+
     def get_variable_qtgui_label_0(self):
         return self.variable_qtgui_label_0
 
@@ -311,9 +361,15 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5000, 1000, window.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(0.5, self.samp_rate, 4000, 1000, window.WIN_HAMMING, 6.76))
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
+
+    def get_rs_ratio(self):
+        return self.rs_ratio
+
+    def set_rs_ratio(self, rs_ratio):
+        self.rs_ratio = rs_ratio
 
     def get_gain(self):
         return self.gain
@@ -321,6 +377,12 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
     def set_gain(self, gain):
         self.gain = gain
         self.uhd_usrp_source_0.set_normalized_gain(self.gain, 0)
+
+    def get_audio_rate(self):
+        return self.audio_rate
+
+    def set_audio_rate(self, audio_rate):
+        self.audio_rate = audio_rate
 
 
 

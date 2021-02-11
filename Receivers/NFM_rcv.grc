@@ -55,12 +55,24 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '4'
+    value: (int)(samp_rate/48000)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [288, 12.0]
+    rotation: 0
+    state: true
+- name: rs_ratio
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 76.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -133,7 +145,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 196.0]
+    coordinate: [568, 372.0]
     rotation: 0
     state: enabled
 - name: analog_simple_squelch_cc_0
@@ -167,7 +179,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 324.0]
+    coordinate: [936, 396.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0_0
@@ -185,16 +197,35 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 324.0]
+    coordinate: [768, 396.0]
     rotation: 0
     state: enabled
+- name: blocks_throttle_0
+  id: blocks_throttle
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: '48000'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 252.0]
+    rotation: 0
+    state: true
 - name: fft_filter_xxx_0_0
   id: fft_filter_xxx
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    decim: rf_decim
+    decim: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
     nthreads: '1'
@@ -205,9 +236,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 204.0]
+    coordinate: [248, 204.0]
     rotation: 0
     state: enabled
+- name: mmse_resampler_xx_0
+  id: mmse_resampler_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_shift: '0'
+    resamp_ratio: ((samp_rate/48000)*rs_ratio)
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [632, 224.0]
+    rotation: 0
+    state: true
 - name: qtgui_waterfall_sink_x_0
   id: qtgui_waterfall_sink_x
   parameters:
@@ -266,7 +315,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 296.0]
+    coordinate: [248, 292.0]
     rotation: 0
     state: true
 - name: zeromq_sub_source_0
@@ -294,9 +343,11 @@ blocks:
 
 connections:
 - [analog_nbfm_rx_0, '0', blocks_multiply_const_vxx_0_0, '0']
-- [analog_simple_squelch_cc_0, '0', analog_nbfm_rx_0, '0']
+- [analog_simple_squelch_cc_0, '0', mmse_resampler_xx_0, '0']
 - [blocks_multiply_const_vxx_0_0, '0', audio_sink_0, '0']
+- [blocks_throttle_0, '0', analog_nbfm_rx_0, '0']
 - [fft_filter_xxx_0_0, '0', analog_simple_squelch_cc_0, '0']
+- [mmse_resampler_xx_0, '0', blocks_throttle_0, '0']
 - [zeromq_sub_source_0, '0', fft_filter_xxx_0_0, '0']
 - [zeromq_sub_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 
