@@ -1,7 +1,7 @@
 # gr-control
 Modular transmit / receive station control
 
-This package contains GNU Radio flowgraphs for transmitters and receivers. They work in conjunction with the station control module which contains SDR source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
+This package contains GNU Radio flowgraphs for transmitters and receivers which work in conjunction with a station control module. The control module contains SDR source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
 
@@ -10,7 +10,7 @@ This is a modular design allowing various transmit and receive programs to opera
 There are three branches of this repository:
 
 * `main` (the default) is the development branch for software not yet put into the maint branches. An additional process is added to implement the relay control using a Raspberry Pi computer.
-* `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load when used on a Raspberry Pi computer.
+* `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load if used on a Raspberry Pi computer.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
 Near the top of this page is a pull-down to select the branches.
@@ -68,11 +68,15 @@ The package uses four separate processes. They all can be on the same computer o
 ```
 cd ~/gr-control
 ```
-2. Execute `xmt_rcv_switch.py`.  
+2. Execute `gnuradio-companion`.  
 ```
-python3 -u xmt_rcv_switch.py
+gnuradio-companion
 ```
-3. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
+3. Open the `xmt_rcv_switch` flowgraph.
+4. Change the IP address of the ZMQ SUB Message Source block to the IP of the Raspberry Pi.
+5. Change the IP address of the ZMQ PUB Message Sink to the IP of the computer where `xmt_rcv_switch.py` will run (your local computer).
+6. Click 'Run' and 'Execute' or press F6.
+7. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
   * mute receiver
   * turn off rcv LED
   * turn on Antenna LED
@@ -90,13 +94,18 @@ Here is a screen shot:
 
 #### Raspberry Pi relay module
 
+The Raspberry Pi computer is equipped with an add-on relay board. Wire jumpers are added from GPIO 17 to relay channel 1 (for the antenna) and from GPIO 27 to relay channel 2 (for the power amplifier).
+
 1. Open a terminal window on the Raspberry Pi.
-2. Go to the folder where `relay_sequencer.py` is stored.
-3. Execute `relay_sequencer.py`.  
+2. Download the `relay_sequencer.py` program.
+3. Edit the program as follows:
+    - change the `_SUB_ADDR` (on line 21) to the IP of the computer where `xmt_rcv_switch.py` will run.
+    - change the `_PUB_ADDR` (on line 29) to the IP of the Raspberry Pi.
+4. Execute `relay_sequencer.py`.  
 ```
-python3 -u `relay_sequencer.py`
+python3 -u relay_sequencer.py
 ```
-4. The program displays the PUB and SUB socket addresses. There is no user interface.
+5. The program displays the PUB and SUB socket addresses on the terminal. There is no user interface.
 
 ### Receiver
 
@@ -152,6 +161,18 @@ cd ~/gr-control
 python3 -u loopback_test.py
 ```
 4. A new window titled `loopback_test` will open showing a chooser for the Sample rate. For the version 3.8 programs, select 576kHz; for 3.9 programs, select 768kHz. 
-5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`).
+5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`) in separate processes.
+
+## Underruns
+
+There are two types of data underrun errors which may occur: audio underruns shown as `aU` on the terminal screen, and USRP or Pluto underruns shown as `U` on the terminal screen.
+
+### Audio underruns
+
+For audio underruns, refer to [Working with ALSA and Pulse Audio](https://wiki.gnuradio.org/index.php/ALSAPulseAudio#Working_with_ALSA_and_Pulse_Audio).
+
+### SDR underruns
+
+In the NFM and SSB modules there is a variable `rs_ratio` which can be adjusted by small amounts to help correct the problem on your computer. When the variable is changed, the flowgraph must be Generated again before running.
 
 
