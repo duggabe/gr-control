@@ -145,7 +145,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [568, 372.0]
+    coordinate: [192, 412.0]
     rotation: 0
     state: enabled
 - name: analog_simple_squelch_cc_0
@@ -179,7 +179,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 396.0]
+    coordinate: [560, 436.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0_0
@@ -197,28 +197,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [768, 396.0]
+    coordinate: [392, 436.0]
     rotation: 0
     state: enabled
-- name: blocks_throttle_0
-  id: blocks_throttle
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    ignoretag: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samples_per_second: '48000'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [840, 252.0]
-    rotation: 0
-    state: true
 - name: fft_filter_xxx_0_0
   id: fft_filter_xxx
   parameters:
@@ -318,6 +299,32 @@ blocks:
     coordinate: [248, 292.0]
     rotation: 0
     state: true
+- name: virtual_sink_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: p1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 252.0]
+    rotation: 0
+    state: true
+- name: virtual_source_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: p1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [32, 436.0]
+    rotation: 0
+    state: true
 - name: zeromq_sub_source_0
   id: zeromq_sub_source
   parameters:
@@ -345,9 +352,9 @@ connections:
 - [analog_nbfm_rx_0, '0', blocks_multiply_const_vxx_0_0, '0']
 - [analog_simple_squelch_cc_0, '0', mmse_resampler_xx_0, '0']
 - [blocks_multiply_const_vxx_0_0, '0', audio_sink_0, '0']
-- [blocks_throttle_0, '0', analog_nbfm_rx_0, '0']
 - [fft_filter_xxx_0_0, '0', analog_simple_squelch_cc_0, '0']
-- [mmse_resampler_xx_0, '0', blocks_throttle_0, '0']
+- [mmse_resampler_xx_0, '0', virtual_sink_0, '0']
+- [virtual_source_0, '0', analog_nbfm_rx_0, '0']
 - [zeromq_sub_source_0, '0', fft_filter_xxx_0_0, '0']
 - [zeromq_sub_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 

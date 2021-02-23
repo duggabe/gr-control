@@ -19,8 +19,17 @@ Near the top of this page is a pull-down to select the branches.
 
 Choose the branch you want, then continue with the README.md instuctions **for that branch**.
 
-## Installation
+## Table of Contents
 
+[Installation](#install)  
+[Operation](#ops)  
+[Testing](#loopback)  
+[Underruns](#under)  
+[Credits](#creds)  
+
+<a name="install"/>
+
+## Installation
 **IMPORTANT NOTES:**
 
 * These instructions are written for a Linux OS. Similar commands work for Mac and Windows.
@@ -47,9 +56,22 @@ cd ~/gr-control
 ```
 6. If you want the `maint-3.8` version, see the branch selection instructions above.
 7. If you want the `maint-3.9` version, see the branch selection instructions above.
+8. To use the transmitters in this main branch, you must install gr-cessb as follows:  
+```
+cd
+git clone https://github.com/drmpeg/gr-cessb.git
+cd ~/gr-cessb
+mkdir build
+cd build
+cmake ../
+make
+sudo make install
+sudo ldconfig
+```
+
+<a name="ops"/>
 
 ## Operation
-
 The package uses four separate processes. They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
 ### Data Flow Description
@@ -76,7 +98,7 @@ gnuradio-companion
 4. Change the IP address of the ZMQ SUB Message Source block to the IP of the Raspberry Pi.
 5. Change the IP address of the ZMQ PUB Message Sink to the IP of the computer where `xmt_rcv_switch.py` will run (your local computer).
 6. Click 'Run' and 'Execute' or press F6.
-7. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
+7. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Tx gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
   * mute receiver
   * turn off rcv LED
   * turn on Antenna LED
@@ -145,10 +167,11 @@ cd ~/gr-control/Transmitters
 3. Execute the transmitter of your choice.  
     `python3 -u NFM_xmt.py`  
     `python3 -u SSB_xmt.py`  
-4. A new window will open showing an Audio Gain control as well as a frequency spectrum display. The NFM_xmt screen also has a selector for PL tones. Using a tone of 0.0 turns off the PL.
+4. A new window will open showing an Audio Gain control, Output Level control, and an oscilloscope display. The NFM_xmt screen also has a selector for PL tones. Using a tone of 0.0 turns off the PL.
+
+<a name="loopback"/>
 
 ## Loopback Testing
-
 A flowgraph is included to allow loopback testing of a transmitter and a receiver without using SDR hardware. It operates **in place of** the `xmt_rcv_switch` program.
 
 1. Open a terminal window.
@@ -163,8 +186,9 @@ python3 -u loopback_test.py
 4. A new window titled `loopback_test` will open showing a chooser for the Sample rate. For the version 3.8 programs, select 576kHz; for 3.9 programs, select 768kHz. 
 5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`) in separate processes.
 
-## Underruns
+<a name="under"/>
 
+## Underruns
 There are two types of data underrun errors which may occur: audio underruns shown as `aU` on the terminal screen, and USRP or Pluto underruns shown as `U` on the terminal screen.
 
 ### Audio underruns
@@ -174,5 +198,10 @@ For audio underruns, refer to [Working with ALSA and Pulse Audio](https://wiki.g
 ### SDR underruns
 
 In the NFM and SSB modules there is a variable `rs_ratio` which can be adjusted by small amounts to help correct the problem on your computer. When the variable is changed, the flowgraph must be Generated again before running.
+
+<a name="creds"/>
+
+## Credits
+Thanks to Ron Economos (w6rz) for updating gr-cessb to version 3.9. I have used his Controlled Envelope speech processing in both SSB and NFM transmitters.
 
 

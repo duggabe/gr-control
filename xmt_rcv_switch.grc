@@ -32,18 +32,6 @@ options:
     state: enabled
 
 blocks:
-- name: audio_rate
-  id: variable
-  parameters:
-    comment: ''
-    value: '48000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [192, 12.0]
-    rotation: 0
-    state: true
 - name: freq
   id: variable_qtgui_entry
   parameters:
@@ -71,7 +59,7 @@ blocks:
     start: '0'
     step: '0.1'
     stop: '1.00'
-    value: '0.50'
+    value: '1.00'
     widget: slider
   states:
     bus_sink: false
@@ -110,30 +98,6 @@ blocks:
     coordinate: [968, 12.0]
     rotation: 0
     state: true
-- name: pressed
-  id: variable
-  parameters:
-    comment: ''
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1008, 180.0]
-    rotation: 0
-    state: true
-- name: rs_ratio
-  id: variable
-  parameters:
-    comment: ''
-    value: '1.0145'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [16, 124.0]
-    rotation: 0
-    state: true
 - name: samp_rate
   id: variable
   parameters:
@@ -143,7 +107,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 76.0]
+    coordinate: [192, 12.0]
     rotation: 0
     state: enabled
 - name: state
@@ -178,7 +142,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 12.0]
+    coordinate: [288, 12.0]
     rotation: 0
     state: true
 - name: tx_gain
@@ -199,7 +163,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 12.0]
+    coordinate: [680, 12.0]
     rotation: 0
     state: true
 - name: variable_qtgui_label_0
@@ -215,76 +179,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1136, 12.0]
+    coordinate: [984, 156.0]
     rotation: 0
     state: enabled
-- name: variable_qtgui_label_1
-  id: variable_qtgui_label
-  parameters:
-    comment: 10,0
-    formatter: None
-    gui_hint: 10,0,1,1
-    label: Trigger
-    type: int
-    value: pressed
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1136, 148.0]
-    rotation: 0
-    state: true
-- name: analog_const_source_x_0
-  id: analog_const_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: pressed
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: short
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [456, 660.0]
-    rotation: 0
-    state: true
-- name: blocks_burst_tagger_0
-  id: blocks_burst_tagger
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    false_key: tx_eob
-    false_value: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    true_key: tx_sob
-    true_value: 'True'
-    type: complex
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [680, 556.0]
-    rotation: 0
-    state: true
-- name: blocks_msgpair_to_var_0
-  id: blocks_msgpair_to_var
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    target: pressed
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [680, 468.0]
-    rotation: 0
-    state: true
 - name: blocks_mute_xx_0
   id: blocks_mute_xx
   parameters:
@@ -322,7 +219,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 520.0]
+    coordinate: [384, 520.0]
     rotation: 0
     state: enabled
 - name: epy_block_0
@@ -423,7 +320,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 516.0]
+    coordinate: [592, 516.0]
     rotation: 0
     state: true
 - name: qtgui_ledindicator_0
@@ -561,7 +458,7 @@ blocks:
     bw7: '0'
     bw8: '0'
     bw9: '0'
-    center_freq0: tx_freq
+    center_freq0: uhd.tune_request(tx_freq, 300000)
     center_freq1: '0'
     center_freq10: '0'
     center_freq11: '0'
@@ -603,7 +500,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"send_frame_size=8192"'
+    dev_addr: '"send_frame_size=8192,num_send_frames=128"'
     dev_args: '""'
     gain0: tx_gain
     gain1: '0'
@@ -749,9 +646,10 @@ blocks:
     sd_spec6: ''
     sd_spec7: ''
     show_lo_controls: 'False'
+    start_time: '-1.0'
     stream_args: ''
     stream_chans: '[]'
-    sync: sync
+    sync: none
     time_source0: ''
     time_source1: ''
     time_source2: ''
@@ -765,7 +663,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 500.0]
+    coordinate: [832, 484.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_0
@@ -912,7 +810,7 @@ blocks:
     dc_offs_enb8: '""'
     dc_offs_enb9: '""'
     dev_addr: ''
-    dev_args: '"recv_buff_size=16384"'
+    dev_args: '"recv_buff_size=12288,recv_frame_size=1536"'
     gain0: gain
     gain1: '0'
     gain10: '0'
@@ -1120,6 +1018,7 @@ blocks:
     sd_spec6: ''
     sd_spec7: ''
     show_lo_controls: 'False'
+    start_time: '-1.0'
     stream_args: ''
     stream_chans: '[]'
     sync: none
@@ -1136,7 +1035,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 92.0]
+    coordinate: [344, 92.0]
     rotation: 0
     state: enabled
 - name: zeromq_pub_msg_sink_0
@@ -1212,23 +1111,20 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 492.0]
+    coordinate: [112, 492.0]
     rotation: 0
     state: true
 
 connections:
-- [analog_const_source_x_0, '0', blocks_burst_tagger_0, '1']
-- [blocks_burst_tagger_0, '0', uhd_usrp_sink_0, '0']
 - [blocks_mute_xx_0, '0', zeromq_pub_sink_0, '0']
 - [blocks_selector_0, '0', low_pass_filter_0, '0']
 - [epy_block_0, ant_sw, qtgui_ledindicator_0, state]
-- [epy_block_0, burst, blocks_msgpair_to_var_0, inpair]
 - [epy_block_0, pa_sw, qtgui_ledindicator_1, state]
 - [epy_block_0, rx_led, qtgui_ledindicator_2, state]
 - [epy_block_0, rx_mute, blocks_mute_xx_0, set_mute]
 - [epy_block_0, sw_cmd, zeromq_pub_msg_sink_0, in]
 - [epy_block_0, tx_mute, blocks_selector_0, en]
-- [low_pass_filter_0, '0', blocks_burst_tagger_0, '0']
+- [low_pass_filter_0, '0', uhd_usrp_sink_0, '0']
 - [state, state, epy_block_0, msg_in]
 - [uhd_usrp_source_0, '0', blocks_mute_xx_0, '0']
 - [zeromq_sub_msg_source_0, out, epy_block_0, msg_in]

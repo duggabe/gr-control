@@ -8,7 +8,7 @@
 # Title: NFM_rcv
 # Author: Barry Duggan
 # Description: NB FM receiver
-# GNU Radio version: 3.9.0.0
+# GNU Radio version: v3.10.0.0git-155-g8e6f3482
 
 from distutils.version import StrictVersion
 
@@ -135,7 +135,6 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, ((samp_rate/48000)*rs_ratio))
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
-        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, 48000,True)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
         self.audio_sink_0 = audio.sink(48000, '', False)
         self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
@@ -154,9 +153,8 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.connect((self.analog_nbfm_rx_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
         self.connect((self.analog_simple_squelch_cc_0, 0), (self.mmse_resampler_xx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.audio_sink_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.analog_nbfm_rx_0, 0))
         self.connect((self.fft_filter_xxx_0_0, 0), (self.analog_simple_squelch_cc_0, 0))
-        self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.mmse_resampler_xx_0, 0), (self.analog_nbfm_rx_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.fft_filter_xxx_0_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
 
