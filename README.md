@@ -9,13 +9,13 @@ This is a modular design allowing various transmit and receive programs to opera
 
 There are three branches of this repository:
 
-* `main` (the default) is the development branch for software not yet put into the maint branches. An additional process is added to implement the relay control using a Raspberry Pi computer.
+* `main` (the default) is the development branch for software not yet put into the maint branches. It contains flowgraphs for GNU Radio 3.9+. An additional process is added to implement the relay control using a Raspberry Pi computer.
 * `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load if used on a Raspberry Pi computer.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
 Near the top of this page is a pull-down to select the branches.
 
-![screen shot](./branch_selection.png "git branch selection")
+<img src="./branch_selection.png" width="200" height="200">
 
 Choose the branch you want, then continue with the README.md instuctions **for that branch**.
 
@@ -72,9 +72,11 @@ sudo ldconfig
 <a name="ops"/>
 
 ## Operation
-The package uses four separate processes. They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
+The package uses four separate processes: (a) the station control module (`xmt_rcv_switch`), a transmitter, a receiver, and the relay contol module (in a Raspberry Pi). They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
 ### Data Flow Description
+
+<img src="./xmt_rcv_sw_diagram.png" width="346" height="400">
 
 1. In the Station Control Module, received data from the SDR Source passes through a Mute block to a ZMQ PUB Sink on port 49201.
 2. A receiver program (running in a second process) listens with a ZMQ SUB Source on port 49201 and then demodulates the signal.
@@ -112,7 +114,7 @@ gnuradio-companion
 
 Here is a screen shot:
 
-![screen shot](./xmt_rcv_switch_out.png "gr-control Station Control")
+<img src="./xmt_rcv_switch_out.png" width="432" height="246">
 
 #### Raspberry Pi relay module
 
@@ -136,7 +138,7 @@ Currently there are three programs for receiving:
 * Narrow Band FM - `NFM_rcv`
 * Single Sideband - `SSB_rcv`
 * Broadcast FM (mono) - `WBFM_rcv` for 3.8
-* Broadcast FM Stereo - `WBFM_stereo` for 3.9
+* Broadcast FM Stereo - `WBFM_stereo` for 3.9+
 
 1. Open a second terminal window.
 2. Go to the gr-control/Receivers folder.  
@@ -147,7 +149,7 @@ cd ~/gr-control/Receivers
     `python3 -u NFM_rcv.py`   
     `python3 -u SSB_rcv.py`  
     `python3 -u WBFM_rcv.py`  for 3.8  
-    `python3 -u WBFM_stereo.py`  for 3.9  
+    `python3 -u WBFM_stereo.py`  for 3.9+  
 4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
 
 If you get lots of audio underruns (`aU`) on your terminal, refer to [Working with ALSA and Pulse Audio](https://wiki.gnuradio.org/index.php/ALSAPulseAudio).
