@@ -17,7 +17,7 @@ Near the top of this page is a pull-down to select the branches.
 
 <img src="./branch_selection.png" width="200" height="200">
 
-Choose the branch you want, then continue with the README.md instuctions **for that branch**.
+**Choose the branch you want, then continue with the README.md instuctions for that branch**.
 
 ## Table of Contents
 
@@ -57,17 +57,17 @@ cd ~/gr-control
 6. If you want the `maint-3.8` version, see the branch selection instructions above.
 7. If you want the `maint-3.9` version, see the branch selection instructions above.
 8. To use the transmitters in this main branch, you must install gr-cessb as follows:  
-```
-cd
-git clone https://github.com/drmpeg/gr-cessb.git
-cd ~/gr-cessb
-mkdir build
-cd build
-cmake ../
-make
-sudo make install
-sudo ldconfig
-```
+
+    cd  
+    git clone https://github.com/drmpeg/gr-cessb.git  
+    cd ~/gr-cessb  
+    mkdir build  
+    cd build  
+    cmake ../  
+    make  
+    sudo make install  
+    sudo ldconfig  
+
 
 <a name="ops"/>
 
