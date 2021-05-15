@@ -8,7 +8,7 @@
 # Title: SSB_xmt
 # Author: Barry Duggan
 # Description: SSB transmitter
-# GNU Radio version: v3.10.0.0git-155-g8e6f3482
+# GNU Radio version: v3.9.0.0-161-g5454e46c
 
 from distutils.version import StrictVersion
 
@@ -106,7 +106,6 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
             32768, #size
             samp_rate, #samp_rate
@@ -162,6 +161,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, 1.0/((usrp_rate/samp_rate)*rs_ratio))
         self.fft_filter_xxx_0_2 = filter.fft_filter_ccc(1, band_pass_filter_taps, 1)
         self.fft_filter_xxx_0_2.declare_sample_delay(0)
@@ -209,6 +209,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_band_pass_filter_taps(firdes.complex_band_pass(1.6, self.samp_rate, 200, 3500, 100, window.WIN_HAMMING, 6.76))
         self.mmse_resampler_xx_0.set_resamp_ratio(1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio))
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
 

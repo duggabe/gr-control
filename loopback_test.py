@@ -8,7 +8,7 @@
 # Title: loopback_test
 # Author: Barry Duggan
 # Description: TX / RX loopback
-# GNU Radio version: 3.9.0.0
+# GNU Radio version: v3.9.0.0-161-g5454e46c
 
 from distutils.version import StrictVersion
 
@@ -96,7 +96,7 @@ class loopback_test(gr.top_block, Qt.QWidget):
         self._samp_rate_combo_box.currentIndexChanged.connect(
             lambda i: self.set_samp_rate(self._samp_rate_options[i]))
         # Create the radio buttons
-        self.top_grid_layout.addWidget(self._samp_rate_tool_bar)
+        self.top_layout.addWidget(self._samp_rate_tool_bar)
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
         self.low_pass_filter_0 = filter.fir_filter_ccf(

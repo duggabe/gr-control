@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: NFM_xmt
 # Author: Barry Duggan
-# GNU Radio version: v3.10.0.0git-155-g8e6f3482
+# GNU Radio version: v3.9.0.0-161-g5454e46c
 
 from distutils.version import StrictVersion
 
@@ -127,7 +127,6 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
             32768, #size
             samp_rate, #samp_rate
@@ -183,6 +182,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, 1.0/((usrp_rate/samp_rate)*rs_ratio))
         self.fft_filter_xxx_0_1 = filter.fft_filter_ccc(1, low_pass_filter_taps, 1)
         self.fft_filter_xxx_0_1.declare_sample_delay(0)
@@ -255,6 +255,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_low_pass_filter_taps(firdes.low_pass(1.6, self.samp_rate, 4000, 1000, window.WIN_HAMMING, 6.76))
         self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
         self.band_pass_filter_0.set_taps(firdes.band_pass(1, self.samp_rate, 200, 3000, 100, window.WIN_HAMMING, 6.76))
         self.mmse_resampler_xx_0.set_resamp_ratio(1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio))

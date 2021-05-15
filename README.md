@@ -50,13 +50,7 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. Change to the gr-control directory.  
-```
-cd ~/gr-control
-```
-6. If you want the `maint-3.8` version, see the branch selection instructions above.
-7. If you want the `maint-3.9` version, see the branch selection instructions above.
-8. To use the transmitters in this main branch, you must install gr-cessb as follows:  
+5. To use the transmitters in this main branch, you must install gr-cessb as follows:  
 
     cd  
     git clone https://github.com/drmpeg/gr-cessb.git  
@@ -68,11 +62,10 @@ cd ~/gr-control
     sudo make install  
     sudo ldconfig  
 
-
 <a name="ops"/>
 
 ## Operation
-The package uses four separate processes: (a) the station control module (`xmt_rcv_switch`), a transmitter, a receiver, and the relay contol module (in a Raspberry Pi). They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
+The package uses four separate processes: (a) the station control module (`xmt_rcv_switch`), (b) a transmitter, (c) a receiver, and (d) the relay contol module (in a Raspberry Pi). They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
 ### Data Flow Description
 
@@ -112,13 +105,15 @@ gnuradio-companion
   * delay 10 ms
   * unmute transmitter
 
+Note: the switching times are deliberately set long to allow visual observation of the sequence.
+
 Here is a screen shot:
 
 <img src="./xmt_rcv_switch_out.png" width="432" height="246">
 
 #### Raspberry Pi relay module
 
-The Raspberry Pi computer is equipped with an add-on relay board. Wire jumpers are added from GPIO 17 to relay channel 1 (for the antenna) and from GPIO 27 to relay channel 2 (for the power amplifier).
+The Raspberry Pi computer can be equipped with an add-on relay board. Wire jumpers are added from GPIO 17 to relay channel 1 (for the antenna) and from GPIO 27 to relay channel 2 (for the power amplifier).
 
 1. Open a terminal window on the Raspberry Pi.
 2. Download the `relay_sequencer.py` program.
@@ -129,7 +124,7 @@ The Raspberry Pi computer is equipped with an add-on relay board. Wire jumpers a
 ```
 python3 -u relay_sequencer.py
 ```
-5. The program displays the PUB and SUB socket addresses on the terminal. There is no user interface.
+5. The program displays the PUB and SUB socket addresses on the terminal. There is no user interface per se. If the variable `_debug` is set to `1`, the program will display progress messages when it is performing the switching sequences.
 
 ### Receiver
 
@@ -137,8 +132,7 @@ Currently there are three programs for receiving:
 
 * Narrow Band FM - `NFM_rcv`
 * Single Sideband - `SSB_rcv`
-* Broadcast FM (mono) - `WBFM_rcv` for 3.8
-* Broadcast FM Stereo - `WBFM_stereo` for 3.9+
+* Broadcast FM Stereo - `WBFM_stereo`
 
 1. Open a second terminal window.
 2. Go to the gr-control/Receivers folder.  
@@ -148,8 +142,7 @@ cd ~/gr-control/Receivers
 3. Execute the receiver of your choice.  
     `python3 -u NFM_rcv.py`   
     `python3 -u SSB_rcv.py`  
-    `python3 -u WBFM_rcv.py`  for 3.8  
-    `python3 -u WBFM_stereo.py`  for 3.9+  
+    `python3 -u WBFM_stereo.py`  
 4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
 
 If you get lots of audio underruns (`aU`) on your terminal, refer to [Working with ALSA and Pulse Audio](https://wiki.gnuradio.org/index.php/ALSAPulseAudio).
@@ -185,7 +178,7 @@ cd ~/gr-control
 ```
 python3 -u loopback_test.py
 ```
-4. A new window titled `loopback_test` will open showing a chooser for the Sample rate. For the version 3.8 programs, select 576kHz; for 3.9 programs, select 768kHz. 
+4. A new window titled `loopback_test` will open showing a chooser for the Sample rate. For the version 3.9 programs, select 768kHz. 
 5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`) in separate processes.
 
 <a name="under"/>

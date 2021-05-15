@@ -8,7 +8,7 @@
 # Title: xmt_rcv_switch
 # Author: Barry Duggan
 # Description: Station control module
-# GNU Radio version: v3.10.0.0git-155-g8e6f3482
+# GNU Radio version: v3.9.0.0-161-g5454e46c
 
 from distutils.version import StrictVersion
 
@@ -119,10 +119,6 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
-        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://192.168.1.137:49204', 100, False)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
-        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://192.168.1.194:49202', 100, True)
         self._variable_qtgui_label_0_tool_bar = Qt.QToolBar(self)
 
         if None:
@@ -138,37 +134,6 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(('', "recv_buff_size=12288,recv_frame_size=1536", "master_clock_rate=30.72e6")),
-            uhd.stream_args(
-                cpu_format="fc32",
-                args='',
-                channels=list(range(0,1)),
-            ),
-        )
-        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
-        # No synchronization enforced.
-
-        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, 180000), 0)
-        self.uhd_usrp_source_0.set_antenna("RX2", 0)
-        self.uhd_usrp_source_0.set_rx_agc(False, 0)
-        self.uhd_usrp_source_0.set_normalized_gain(gain, 0)
-        self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("send_frame_size=8192,num_send_frames=128", "", "master_clock_rate=30.72e6")),
-            uhd.stream_args(
-                cpu_format="fc32",
-                args='',
-                channels=list(range(0,1)),
-            ),
-            '',
-        )
-        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        # No synchronization enforced.
-
-        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(tx_freq, 300000), 0)
-        self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
-        self.uhd_usrp_sink_0.set_bandwidth(200000, 0)
-        self.uhd_usrp_sink_0.set_normalized_gain(tx_gain, 0)
         if int == bool:
         	self._state_choices = {'Pressed': bool(1), 'Released': bool(0)}
         elif int == str:
@@ -226,6 +191,41 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
+        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://192.168.1.137:49204', 100, False)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
+        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://192.168.1.194:49202', 100, True)
+        self.uhd_usrp_source_0 = uhd.usrp_source(
+            ",".join(('', "recv_buff_size=12288,recv_frame_size=1536", "master_clock_rate=30.72e6")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+        )
+        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+        # No synchronization enforced.
+
+        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, 180000), 0)
+        self.uhd_usrp_source_0.set_antenna("RX2", 0)
+        self.uhd_usrp_source_0.set_rx_agc(False, 0)
+        self.uhd_usrp_source_0.set_normalized_gain(gain, 0)
+        self.uhd_usrp_sink_0 = uhd.usrp_sink(
+            ",".join(("send_frame_size=8192,num_send_frames=128", "", "master_clock_rate=30.72e6")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+            '',
+        )
+        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
+        # No synchronization enforced.
+
+        self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(tx_freq, 300000), 0)
+        self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
+        self.uhd_usrp_sink_0.set_bandwidth(200000, 0)
+        self.uhd_usrp_sink_0.set_normalized_gain(tx_gain, 0)
         self.low_pass_filter_0 = filter.fir_filter_ccf(
             1,
             firdes.low_pass(
