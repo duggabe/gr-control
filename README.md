@@ -65,6 +65,8 @@ git clone https://github.com/duggabe/gr-control.git
 <a name="ops"/>
 
 ## Operation
+**NOTE:** The latest update has two versions of the control module: `xmt_rcv_switch` using a USRP, and `xmt_rcv_switch_Pluto` using a ADALM Pluto. In the following instructions, use whichever one you like.
+
 The package uses four separate processes: (a) the station control module (`xmt_rcv_switch`), (b) a transmitter, (c) a receiver, and (d) the relay contol module (in a Raspberry Pi). They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
 ### Data Flow Description
