@@ -79,7 +79,7 @@ The package uses four separate processes: (a) the station control module (`xmt_r
 3. A transmit program (running in a third process) generates a baseband signal and sends it to a ZMQ PUB Sink on port 49203.
 4. In the Station Control Module, a ZMQ SUB Source block on port 49203 gets the data to be transmitted and passes it through a Selector block to an SDR Sink.
 
-The slides for a presentation of this project are in <https://github.com/duggabe/gr-control/GRCon21_presentation.pdf>
+The slides for a presentation of this project are in <https://github.com/duggabe/gr-control/blob/main/GRCon21_presentation.pdf>
 
 ### Station Control Module
 
