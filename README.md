@@ -5,6 +5,7 @@ This package contains GNU Radio flowgraphs for transmitters and receivers which 
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
 
+
 ## Versions
 
 There are three branches of this repository:
@@ -77,6 +78,8 @@ The package uses four separate processes: (a) the station control module (`xmt_r
 2. A receiver program (running in a second process) listens with a ZMQ SUB Source on port 49201 and then demodulates the signal.
 3. A transmit program (running in a third process) generates a baseband signal and sends it to a ZMQ PUB Sink on port 49203.
 4. In the Station Control Module, a ZMQ SUB Source block on port 49203 gets the data to be transmitted and passes it through a Selector block to an SDR Sink.
+
+The slides for a presentation of this project are in <https://github.com/duggabe/gr-control/GRCon21_presentation.pdf>
 
 ### Station Control Module
 
