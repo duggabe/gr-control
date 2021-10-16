@@ -8,7 +8,7 @@
 # Title: NFM_rcv
 # Author: Barry Duggan
 # Description: NB FM receiver
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.8.4.0
 
 from distutils.version import StrictVersion
 
@@ -88,10 +88,10 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         self._volume_range = Range(0, 1.00, 0.05, 0.05, 200)
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "slider", float)
-        self.top_grid_layout.addWidget(self._volume_win)
+        self.top_layout.addWidget(self._volume_win)
         self._sq_lvl_range = Range(-100, 0, 5, -50, 200)
         self._sq_lvl_win = RangeWidget(self._sq_lvl_range, self.set_sq_lvl, 'Squelch', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._sq_lvl_win)
+        self.top_layout.addWidget(self._sq_lvl_win)
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
             1024, #size
@@ -125,7 +125,7 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
+        self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(rf_decim, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
@@ -137,7 +137,6 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         	tau=75e-6,
         	max_dev=5e3,
           )
-
 
 
         ##################################################
@@ -161,6 +160,7 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_channel_filter(firdes.complex_band_pass(1.0, self.samp_rate, -3000, 3000, 200, firdes.WIN_HAMMING, 6.76))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
 
     def get_volume(self):

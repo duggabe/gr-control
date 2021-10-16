@@ -8,7 +8,7 @@
 # Title: NFM_xmt
 # Author: Barry Duggan
 # Description: NBFM transmitter
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.8.4.0
 
 from distutils.version import StrictVersion
 
@@ -89,11 +89,11 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         ##################################################
         self._volume_range = Range(0, 10.0, 0.1, 5.0, 200)
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Audio gain', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._volume_win)
+        self.top_layout.addWidget(self._volume_win)
         # Create the options list
         self._pl_freq_options = [0.0, 67.0, 71.9, 74.4, 77.0, 79.7, 82.5, 85.4, 88.5, 91.5, 94.8, 97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8, 136.5, 141.3, 146.2, 151.4, 156.7, 162.2, 167.9, 173.8, 179.9, 186.2, 192.8, 203.5, 210.7, 218.1, 225.7, 233.6, 241.8, 250.3]
         # Create the labels list
-        self._pl_freq_labels = ["0.0", "67.0", "71.9", "74.4", "77.0", "79.7", "82.5", "85.4", "88.5", "91.5", "94.8", "97.4", "100.0", "103.5", "107.2", "110.9", "114.8", "118.8", "123.0", "127.3", "131.8", "136.5", "141.3", "146.2", "151.4", "156.7", "162.2", "167.9", "173.8", "179.9", "186.2", "192.8", "203.5", "210.7", "218.1", "225.7", "233.6", "241.8", "250.3"]
+        self._pl_freq_labels = ['0.0', '67.0', '71.9', '74.4', '77.0', '79.7', '82.5', '85.4', '88.5', '91.5', '94.8', '97.4', '100.0', '103.5', '107.2', '110.9', '114.8', '118.8', '123.0', '127.3', '131.8', '136.5', '141.3', '146.2', '151.4', '156.7', '162.2', '167.9', '173.8', '179.9', '186.2', '192.8', '203.5', '210.7', '218.1', '225.7', '233.6', '241.8', '250.3']
         # Create the combo box
         self._pl_freq_tool_bar = Qt.QToolBar(self)
         self._pl_freq_tool_bar.addWidget(Qt.QLabel('PL Tone' + ": "))
@@ -105,7 +105,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self._pl_freq_combo_box.currentIndexChanged.connect(
             lambda i: self.set_pl_freq(self._pl_freq_options[i]))
         # Create the radio buttons
-        self.top_grid_layout.addWidget(self._pl_freq_tool_bar)
+        self.top_layout.addWidget(self._pl_freq_tool_bar)
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1)
         self.qtgui_sink_x_0 = qtgui.sink_c(
             1024, #fftsize
@@ -123,7 +123,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
 
         self.qtgui_sink_x_0.enable_rf_freq(True)
 
-        self.top_grid_layout.addWidget(self._qtgui_sink_x_0_win)
+        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
         self.low_pass_filter_0 = filter.fir_filter_ccf(
             1,
             firdes.low_pass(
@@ -155,7 +155,6 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         	max_dev=5e3,
         	fh=-1.0,
                 )
-
 
 
         ##################################################

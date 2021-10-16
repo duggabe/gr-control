@@ -8,7 +8,7 @@
 # Title: xmt_rcv_switch
 # Author: Barry Duggan
 # Description: Station control module
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.8.4.0
 
 from distutils.version import StrictVersion
 
@@ -143,7 +143,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         # Create the options list
         self._offset_options = [-600000, 0, 600000]
         # Create the labels list
-        self._offset_labels = ["-600kHz", "0", "+600kHz"]
+        self._offset_labels = ['-600kHz', '0', '+600kHz']
         # Create the combo box
         self._offset_tool_bar = Qt.QToolBar(self)
         self._offset_tool_bar.addWidget(Qt.QLabel('Offset' + ": "))
@@ -196,7 +196,6 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.blocks_selector_0 = blocks.selector(gr.sizeof_gr_complex*1,0,0)
         self.blocks_selector_0.set_enabled(False)
         self.blocks_mute_xx_0 = blocks.mute_cc(bool(False))
-
 
 
         ##################################################

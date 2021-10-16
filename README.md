@@ -27,6 +27,11 @@ Instructions are given below to load the desired version.
 See [What is GNU Radio?](https://wiki.gnuradio.org/index.php/What_is_GNU_Radio%3F) and [Installing GNU Radio](https://wiki.gnuradio.org/index.php/InstallingGR) for background information.
 
 1. Open a terminal window.
+
+* Go to [ModuleNotFoundError](https://wiki.gnuradio.org/index.php/ModuleNotFoundError) to set your `PYTHONPATH` and `LD_LIBRARY_PATH`.  
+* Once you have started a new terminal, enter `env` to check that you have them set properly.  
+* In the following commands, change `/usr/local` if your prefix is different.  
+
 2. Change to the home directory.  
 ```
 cd ~/  
@@ -42,17 +47,12 @@ git clone https://github.com/duggabe/gr-control.git
 5. For the 3.8 version, enter:  
     cd ~/gr-control  
     git checkout maint-3.8  
-6. For version 3.8, load and build [gr-guiextra](https://github.com/ghostop14/gr-guiextra).  
-7. For version 3.8, load and build `gr-iio` as follows:
 
-* Go to [ModuleNotFoundError](https://wiki.gnuradio.org/index.php/ModuleNotFoundError) to set your `PYTHONPATH` and `LD_LIBRARY_PATH`.  
-* Once you have started a new terminal, enter `env` to check that you have them set properly.  
-* In the following commands, change `/usr/local` if your prefix is different.  
-
+6. For version 3.8, load and build `gr-iio` as follows:
 ```
 cd ~
 sudo apt-get -y install libxml2 libxml2-dev bison flex libcdk5-dev cmake git libaio-dev libboost-all-dev swig \
-libgmp-dev liborc-0.4-dev libusb-1.0-0-dev doxygen python3-pip
+libgmp-dev liborc-0.4-dev libusb-1.0-0-dev doxygen python3-pip libserialport-dev libavahi-client-dev
 
 git clone https://github.com/analogdevicesinc/libiio.git
 cd ~/libiio
@@ -80,6 +80,21 @@ make
 sudo make install
 sudo ldconfig
 cd ~
+```
+7. For version 3.8, load and build `gr-guiextra` as follows:
+```
+cd
+sudo apt install python3-matplotlib libsndfile1-dev
+
+git clone https://github.com/ghostop14/gr-guiextra.git
+cd ~/gr-guiextra
+git checkout maint-3.8
+mkdir build
+cd build
+cmake ../
+make
+sudo make install
+sudo ldconfig
 ```
 
 ## Operation
@@ -156,4 +171,19 @@ cd ~/gr-control/Transmitters
     `python3 -u NFM_xmt.py`  
     `python3 -u SSB_xmt.py`  
 4. A new window will open showing an Audio Gain control as well as a frequency spectrum display. The NFM_xmt screen also has a selector for PL tones. Using a tone of 0.0 turns off the PL.
+
+## Loopback Testing
+A flowgraph is included to allow loopback testing of a transmitter and a receiver without using SDR hardware. It operates **in place of** the `xmt_rcv_switch` program.
+
+1. Open a terminal window.
+2. Go to the gr-control folder.  
+```
+cd ~/gr-control
+```
+3. Execute `chan_loopback.py`.  
+```
+python3 -u chan_loopback.py
+```
+4. A new window titled `chan_loopback` will open showing a chooser for the Sample rate. For the version 3.8 programs, select 576kHz. Impairments can be added to the channel such as noise, timing offset, and frequency offset.
+5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`) in separate processes.
 

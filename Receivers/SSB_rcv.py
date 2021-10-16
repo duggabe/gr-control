@@ -8,7 +8,7 @@
 # Title: SSB_rcv
 # Author: Barry Duggan
 # Description: Weaver method
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.8.4.0
 
 from distutils.version import StrictVersion
 
@@ -91,11 +91,11 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         self._volume_range = Range(0, 1.0, 0.05, 0.05, 200)
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._volume_win)
+        self.top_layout.addWidget(self._volume_win)
         # Create the options list
-        self._reverse_options = (-1, 1, )
+        self._reverse_options = [-1, 1]
         # Create the labels list
-        self._reverse_labels = ('Upper', 'Lower', )
+        self._reverse_labels = ['Upper', 'Lower']
         # Create the combo box
         # Create the radio buttons
         self._reverse_group_box = Qt.QGroupBox('Sideband' + ": ")
@@ -116,10 +116,10 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self._reverse_callback(self.reverse)
         self._reverse_button_group.buttonClicked[int].connect(
             lambda i: self.set_reverse(self._reverse_options[i]))
-        self.top_grid_layout.addWidget(self._reverse_group_box)
+        self.top_layout.addWidget(self._reverse_group_box)
         self._bfo_range = Range(0, 3000, 10, 1500, 200)
         self._bfo_win = RangeWidget(self._bfo_range, self.set_bfo, 'Fine tuning', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._bfo_win)
+        self.top_layout.addWidget(self._bfo_win)
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
             1024, #size
@@ -153,7 +153,7 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
+        self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(decim, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_multiply_xx_0_0 = blocks.multiply_vff(1)
@@ -165,7 +165,6 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.audio_sink_0_0 = audio.sink(48000, '', True)
         self.analog_sig_source_x_0_0 = analog.sig_source_f(audio_rate, analog.GR_SIN_WAVE, bfo, 1, 0, 0)
         self.analog_sig_source_x_0 = analog.sig_source_f(audio_rate, analog.GR_COS_WAVE, bfo, 1, 0, 0)
-
 
 
         ##################################################
@@ -195,6 +194,7 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_channel_filter(firdes.complex_band_pass(1.0, self.samp_rate, 300, 5000, 100, firdes.WIN_HAMMING, 6.76))
         self.set_decim((int)(self.samp_rate/self.audio_rate))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
 

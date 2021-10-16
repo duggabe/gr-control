@@ -8,7 +8,7 @@
 # Title: SSB_xmt
 # Author: Barry Duggan
 # Description: SSB transmitter
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.8.4.0
 
 from distutils.version import StrictVersion
 
@@ -87,7 +87,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         ##################################################
         self._volume_range = Range(0, 10.0, 0.1, 0.8, 200)
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Audio gain', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._volume_win)
+        self.top_layout.addWidget(self._volume_win)
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
@@ -128,7 +128,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win)
+        self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_gr_complex*1, (int)(usrp_rate/samp_rate))
@@ -136,7 +136,6 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
         self.audio_source_0 = audio.source(48000, '', True)
         self.analog_const_source_x_0 = analog.sig_source_f(0, analog.GR_CONST_WAVE, 0, 0, 0)
-
 
 
         ##################################################
@@ -161,6 +160,7 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_channel_filter(firdes.complex_band_pass(1.0, self.samp_rate, 300, 5000, 100, firdes.WIN_HAMMING, 6.76))
         self.blocks_repeat_0_0.set_interpolation((int)(self.usrp_rate/self.samp_rate))
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
 
