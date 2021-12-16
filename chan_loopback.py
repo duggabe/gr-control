@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0
 #
 # GNU Radio Python Flow Graph
-# Title: loopback_test
+# Title: chan_loopback
 # Author: Barry Duggan
 # Description: TX / RX loopback
 # GNU Radio version: 3.9.4.0
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 from PyQt5 import Qt
 from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import blocks
-from gnuradio import filter
+from gnuradio import channels
 from gnuradio.filter import firdes
 from gnuradio import gr
 from gnuradio.fft import window
@@ -35,17 +35,19 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import zeromq
+from gnuradio.qtgui import Range, RangeWidget
+from PyQt5 import QtCore
 
 
 
 from gnuradio import qtgui
 
-class loopback_test(gr.top_block, Qt.QWidget):
+class chan_loopback(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "loopback_test", catch_exceptions=True)
+        gr.top_block.__init__(self, "chan_loopback", catch_exceptions=True)
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("loopback_test")
+        self.setWindowTitle("chan_loopback")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
@@ -63,7 +65,7 @@ class loopback_test(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "loopback_test")
+        self.settings = Qt.QSettings("GNU Radio", "chan_loopback")
 
         try:
             if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -76,11 +78,18 @@ class loopback_test(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.time_offset = time_offset = 1.000
+        self.taps = taps = [1.0 + 0.0j, ]
         self.samp_rate = samp_rate = 768000
+        self.noise_volt = noise_volt = 0.0
+        self.freq_offset = freq_offset = 0
 
         ##################################################
         # Blocks
         ##################################################
+        self._time_offset_range = Range(0.999, 1.001, 0.0001, 1.000, 200)
+        self._time_offset_win = RangeWidget(self._time_offset_range, self.set_time_offset, "Timing Offset", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._time_offset_win)
         # Create the options list
         self._samp_rate_options = [768000, 576000]
         # Create the labels list
@@ -97,17 +106,21 @@ class loopback_test(gr.top_block, Qt.QWidget):
             lambda i: self.set_samp_rate(self._samp_rate_options[i]))
         # Create the radio buttons
         self.top_layout.addWidget(self._samp_rate_tool_bar)
+        self._noise_volt_range = Range(0, 1, 0.01, 0.0, 200)
+        self._noise_volt_win = RangeWidget(self._noise_volt_range, self.set_noise_volt, "Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._noise_volt_win)
+        self._freq_offset_range = Range(-0.1, 0.1, 0.001, 0, 200)
+        self._freq_offset_win = RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._freq_offset_win)
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
-        self.low_pass_filter_0 = filter.fir_filter_ccf(
-            1,
-            firdes.low_pass(
-                1,
-                samp_rate,
-                5000,
-                1000,
-                window.WIN_HAMMING,
-                6.76))
+        self.channels_channel_model_0 = channels.channel_model(
+            noise_voltage=noise_volt,
+            frequency_offset=freq_offset,
+            epsilon=time_offset,
+            taps=taps,
+            noise_seed=0,
+            block_tags=True)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
 
 
@@ -116,17 +129,31 @@ class loopback_test(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.blocks_throttle_0, 0), (self.zeromq_pub_sink_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.blocks_throttle_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.channels_channel_model_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "loopback_test")
+        self.settings = Qt.QSettings("GNU Radio", "chan_loopback")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
 
         event.accept()
+
+    def get_time_offset(self):
+        return self.time_offset
+
+    def set_time_offset(self, time_offset):
+        self.time_offset = time_offset
+        self.channels_channel_model_0.set_timing_offset(self.time_offset)
+
+    def get_taps(self):
+        return self.taps
+
+    def set_taps(self, taps):
+        self.taps = taps
+        self.channels_channel_model_0.set_taps(self.taps)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -135,12 +162,25 @@ class loopback_test(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self._samp_rate_callback(self.samp_rate)
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5000, 1000, window.WIN_HAMMING, 6.76))
+
+    def get_noise_volt(self):
+        return self.noise_volt
+
+    def set_noise_volt(self, noise_volt):
+        self.noise_volt = noise_volt
+        self.channels_channel_model_0.set_noise_voltage(self.noise_volt)
+
+    def get_freq_offset(self):
+        return self.freq_offset
+
+    def set_freq_offset(self, freq_offset):
+        self.freq_offset = freq_offset
+        self.channels_channel_model_0.set_frequency_offset(self.freq_offset)
 
 
 
 
-def main(top_block_cls=loopback_test, options=None):
+def main(top_block_cls=chan_loopback, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
         style = gr.prefs().get_string('qtgui', 'style', 'raster')
