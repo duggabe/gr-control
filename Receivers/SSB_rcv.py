@@ -8,9 +8,9 @@
 # Title: SSB_rcv
 # Author: Barry Duggan
 # Description: Weaver method
-# GNU Radio version: v3.9.0.0-161-g5454e46c
+# GNU Radio version: 3.10.0.0-rc4
 
-from distutils.version import StrictVersion
+from packaging.version import Version as StrictVersion
 
 if __name__ == '__main__':
     import ctypes
@@ -82,11 +82,10 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 768000
         self.volume = volume = 0.05
-        self.rs_ratio = rs_ratio = 0.98
+        self.samp_rate = samp_rate = 768000
+        self.rs_ratio = rs_ratio = 0.96
         self.reverse = reverse = -1
-        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, 300, 5000, 100, window.WIN_HAMMING, 6.76)
         self.bfo = bfo = 1500
         self.audio_rate = audio_rate = 48000
 
@@ -94,15 +93,15 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
         self._volume_range = Range(0, 1.0, 0.05, 0.05, 200)
-        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._volume_win = RangeWidget(self._volume_range, self.set_volume, "Volume", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._volume_win)
         # Create the options list
-        self._reverse_options = [-1, 1]
+        self._reverse_options = [-1, 1, 0]
         # Create the labels list
-        self._reverse_labels = ['Upper', 'Lower']
+        self._reverse_labels = ['Upper', 'Lower', 'BFO']
         # Create the combo box
         # Create the radio buttons
-        self._reverse_group_box = Qt.QGroupBox('Sideband' + ": ")
+        self._reverse_group_box = Qt.QGroupBox("Sideband" + ": ")
         self._reverse_box = Qt.QVBoxLayout()
         class variable_chooser_button_group(Qt.QButtonGroup):
             def __init__(self, parent=None):
@@ -122,46 +121,52 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
             lambda i: self.set_reverse(self._reverse_options[i]))
         self.top_layout.addWidget(self._reverse_group_box)
         self._bfo_range = Range(0, 3000, 10, 1500, 200)
-        self._bfo_win = RangeWidget(self._bfo_range, self.set_bfo, 'Fine tuning', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._bfo_win = RangeWidget(self._bfo_range, self.set_bfo, "Fine tuning", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._bfo_win)
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
-        self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
+        self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
             window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
-            samp_rate, #bw
+            audio_rate, #bw
             "", #name
-            1, #number of inputs
+            1,
             None # parent
         )
-        self.qtgui_waterfall_sink_x_0.set_update_time(0.10)
-        self.qtgui_waterfall_sink_x_0.enable_grid(False)
-        self.qtgui_waterfall_sink_x_0.enable_axis_labels(True)
+        self.qtgui_freq_sink_x_0.set_update_time(0.10)
+        self.qtgui_freq_sink_x_0.set_y_axis(-140, 10)
+        self.qtgui_freq_sink_x_0.set_y_label('Relative Gain', 'dB')
+        self.qtgui_freq_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
+        self.qtgui_freq_sink_x_0.enable_autoscale(False)
+        self.qtgui_freq_sink_x_0.enable_grid(False)
+        self.qtgui_freq_sink_x_0.set_fft_average(1.0)
+        self.qtgui_freq_sink_x_0.enable_axis_labels(True)
+        self.qtgui_freq_sink_x_0.enable_control_panel(False)
+        self.qtgui_freq_sink_x_0.set_fft_window_normalized(False)
 
 
 
         labels = ['', '', '', '', '',
-                  '', '', '', '', '']
-        colors = [0, 0, 0, 0, 0,
-                  0, 0, 0, 0, 0]
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ["blue", "red", "green", "black", "cyan",
+            "magenta", "yellow", "dark red", "dark green", "dark blue"]
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-                  1.0, 1.0, 1.0, 1.0, 1.0]
+            1.0, 1.0, 1.0, 1.0, 1.0]
 
         for i in range(1):
             if len(labels[i]) == 0:
-                self.qtgui_waterfall_sink_x_0.set_line_label(i, "Data {0}".format(i))
+                self.qtgui_freq_sink_x_0.set_line_label(i, "Data {0}".format(i))
             else:
-                self.qtgui_waterfall_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_waterfall_sink_x_0.set_color_map(i, colors[i])
-            self.qtgui_waterfall_sink_x_0.set_line_alpha(i, alphas[i])
+                self.qtgui_freq_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_freq_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
-
-        self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
+        self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, ((samp_rate/48000)*rs_ratio))
-        self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
-        self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_multiply_xx_0_0 = blocks.multiply_vff(1)
         self.blocks_multiply_xx_0 = blocks.multiply_vff(1)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(reverse)
@@ -171,7 +176,6 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.audio_sink_0_0 = audio.sink(48000, '', True)
         self.analog_sig_source_x_0_0 = analog.sig_source_f(audio_rate, analog.GR_SIN_WAVE, bfo, 1, 0, 0)
         self.analog_sig_source_x_0 = analog.sig_source_f(audio_rate, analog.GR_COS_WAVE, bfo, 1, 0, 0)
-
 
 
         ##################################################
@@ -186,10 +190,9 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.blocks_multiply_xx_0_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
-        self.connect((self.fft_filter_xxx_0_0, 0), (self.mmse_resampler_xx_0, 0))
         self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_complex_to_float_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.fft_filter_xxx_0_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
+        self.connect((self.mmse_resampler_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.mmse_resampler_xx_0, 0))
 
 
     def closeEvent(self, event):
@@ -200,21 +203,19 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
 
         event.accept()
 
-    def get_samp_rate(self):
-        return self.samp_rate
-
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.set_channel_filter(firdes.complex_band_pass(1.0, self.samp_rate, 300, 5000, 100, window.WIN_HAMMING, 6.76))
-        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
-        self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
-
     def get_volume(self):
         return self.volume
 
     def set_volume(self, volume):
         self.volume = volume
         self.blocks_multiply_const_vxx_0.set_k(self.volume)
+
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
 
     def get_rs_ratio(self):
         return self.rs_ratio
@@ -231,13 +232,6 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self._reverse_callback(self.reverse)
         self.blocks_multiply_const_vxx_0_0.set_k(self.reverse)
 
-    def get_channel_filter(self):
-        return self.channel_filter
-
-    def set_channel_filter(self, channel_filter):
-        self.channel_filter = channel_filter
-        self.fft_filter_xxx_0_0.set_taps(self.channel_filter)
-
     def get_bfo(self):
         return self.bfo
 
@@ -253,6 +247,7 @@ class SSB_rcv(gr.top_block, Qt.QWidget):
         self.audio_rate = audio_rate
         self.analog_sig_source_x_0.set_sampling_freq(self.audio_rate)
         self.analog_sig_source_x_0_0.set_sampling_freq(self.audio_rate)
+        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.audio_rate)
 
 
 

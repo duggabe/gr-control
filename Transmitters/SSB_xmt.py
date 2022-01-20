@@ -8,9 +8,9 @@
 # Title: SSB_xmt
 # Author: Barry Duggan
 # Description: SSB transmitter
-# GNU Radio version: v3.9.0.0-161-g5454e46c
+# GNU Radio version: 3.10.0.0-rc4
 
-from distutils.version import StrictVersion
+from packaging.version import Version as StrictVersion
 
 if __name__ == '__main__':
     import ctypes
@@ -93,19 +93,20 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
         self._volume_range = Range(0, 10.0, 0.1, 3.0, 200)
-        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Audio gain', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._volume_win = RangeWidget(self._volume_range, self.set_volume, "Audio gain", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._volume_win, 0, 0, 1, 3)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._audio_lvl_range = Range(0.5, 3.0, 0.1, 1.3, 200)
-        self._audio_lvl_win = RangeWidget(self._audio_lvl_range, self.set_audio_lvl, 'Output Level', "counter_slider", float, QtCore.Qt.Horizontal)
+        self._audio_lvl_win = RangeWidget(self._audio_lvl_range, self.set_audio_lvl, "Output Level", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._audio_lvl_win, 1, 0, 1, 3)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
             32768, #size
             samp_rate, #samp_rate
@@ -155,13 +156,12 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
+        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win, 2, 0, 1, 3)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
         self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, 1.0/((usrp_rate/samp_rate)*rs_ratio))
         self.fft_filter_xxx_0_2 = filter.fft_filter_ccc(1, band_pass_filter_taps, 1)
         self.fft_filter_xxx_0_2.declare_sample_delay(0)
@@ -176,7 +176,6 @@ class SSB_xmt(gr.top_block, Qt.QWidget):
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
         self.audio_source_0 = audio.source(48000, '', True)
         self.analog_const_source_x_0 = analog.sig_source_f(0, analog.GR_CONST_WAVE, 0, 0, 0)
-
 
 
         ##################################################

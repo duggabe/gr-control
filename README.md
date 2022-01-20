@@ -1,16 +1,15 @@
 # gr-control
 Modular transmit / receive station control
 
-This package contains GNU Radio flowgraphs for transmitters and receivers which work in conjunction with a station control module. The control module contains SDR source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
+This package contains GNU Radio flowgraphs for transmitters and receivers which work in conjunction with a station control module. The station control module contains SDR source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
 
-This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept.
-
+This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept. It is a "testbed" to support additional modules while minimizing duplication of common functions.
 
 ## Versions
 
 There are three branches of this repository:
 
-* `main` (the default) is the development branch for software not yet put into the maint branches. It contains flowgraphs for GNU Radio 3.9+. An additional process is added to implement the relay control using a Raspberry Pi computer.
+* `main` (the default) is the development branch for software not yet put into the maint branches. It contains flowgraphs for GNU Radio 3.9 and 3.10. An additional process is added to implement the relay control using a Raspberry Pi computer.
 * `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load if used on a Raspberry Pi computer.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
@@ -148,7 +147,7 @@ cd ~/gr-control/Receivers
     `python3 -u NFM_rcv.py`   
     `python3 -u SSB_rcv.py`  
     `python3 -u WBFM_stereo.py`  
-4. A new window will open showing Volume and Squelch controls as well as a waterfall spectrum display.
+4. A new window will open showing Volume and Squelch controls as well as a spectrum display.
 
 If you get lots of audio underruns (`aU`) on your terminal, refer to [Working with ALSA and Pulse Audio](https://wiki.gnuradio.org/index.php/ALSAPulseAudio).
 
