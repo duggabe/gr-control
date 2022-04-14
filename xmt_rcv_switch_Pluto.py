@@ -8,7 +8,7 @@
 # Title: xmt_rcv_switch_Pluto
 # Author: Barry Duggan
 # Description: Pluto Station control module
-# GNU Radio version: 3.10.0.0-rc4
+# GNU Radio version: 3.10.1.1
 
 from packaging.version import Version as StrictVersion
 

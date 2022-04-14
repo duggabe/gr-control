@@ -23,11 +23,12 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: NFM_rcv
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 12.0]
+    coordinate: [16, 12.0]
     rotation: 0
     state: enabled
 
@@ -60,7 +61,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 12.0]
+    coordinate: [280, 12.0]
     rotation: 0
     state: true
 - name: rs_ratio
@@ -72,7 +73,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 76.0]
+    coordinate: [184, 76.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -84,7 +85,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 12.0]
+    coordinate: [184, 12.0]
     rotation: 0
     state: enabled
 - name: sq_lvl
@@ -162,7 +163,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 212.0]
+    coordinate: [440, 212.0]
     rotation: 0
     state: enabled
 - name: audio_sink_0
@@ -179,9 +180,34 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 436.0]
+    coordinate: [752, 436.0]
     rotation: 0
     state: enabled
+- name: band_pass_filter_0
+  id: band_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    decim: '1'
+    gain: '1'
+    high_cutoff_freq: '3000'
+    interp: '1'
+    low_cutoff_freq: '300'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: '48000'
+    type: fir_filter_fff
+    width: '100'
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 380.0]
+    rotation: 0
+    state: true
 - name: blocks_multiply_const_vxx_0_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -197,7 +223,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 436.0]
+    coordinate: [584, 436.0]
     rotation: 0
     state: enabled
 - name: fft_filter_xxx_0_0
@@ -217,7 +243,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 204.0]
+    coordinate: [264, 204.0]
     rotation: 0
     state: enabled
 - name: mmse_resampler_xx_0
@@ -235,7 +261,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 224.0]
+    coordinate: [656, 224.0]
     rotation: 0
     state: true
 - name: qtgui_waterfall_sink_x_0
@@ -296,7 +322,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 292.0]
+    coordinate: [264, 292.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
@@ -309,7 +335,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 252.0]
+    coordinate: [864, 252.0]
     rotation: 0
     state: true
 - name: virtual_source_0
@@ -349,8 +375,9 @@ blocks:
     state: true
 
 connections:
-- [analog_nbfm_rx_0, '0', blocks_multiply_const_vxx_0_0, '0']
+- [analog_nbfm_rx_0, '0', band_pass_filter_0, '0']
 - [analog_simple_squelch_cc_0, '0', mmse_resampler_xx_0, '0']
+- [band_pass_filter_0, '0', blocks_multiply_const_vxx_0_0, '0']
 - [blocks_multiply_const_vxx_0_0, '0', audio_sink_0, '0']
 - [fft_filter_xxx_0_0, '0', analog_simple_squelch_cc_0, '0']
 - [mmse_resampler_xx_0, '0', virtual_sink_0, '0']

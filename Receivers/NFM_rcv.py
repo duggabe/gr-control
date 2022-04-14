@@ -8,7 +8,7 @@
 # Title: NFM_rcv
 # Author: Barry Duggan
 # Description: NB FM receiver
-# GNU Radio version: 3.10.0.0-rc4
+# GNU Radio version: 3.10.1.1
 
 from packaging.version import Version as StrictVersion
 
@@ -137,6 +137,16 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
+        self.band_pass_filter_0 = filter.fir_filter_fff(
+            1,
+            firdes.band_pass(
+                1,
+                48000,
+                300,
+                3000,
+                100,
+                window.WIN_HAMMING,
+                6.76))
         self.audio_sink_0 = audio.sink(48000, '', False)
         self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
         self.analog_nbfm_rx_0 = analog.nbfm_rx(
@@ -150,8 +160,9 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_nbfm_rx_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
+        self.connect((self.analog_nbfm_rx_0, 0), (self.band_pass_filter_0, 0))
         self.connect((self.analog_simple_squelch_cc_0, 0), (self.mmse_resampler_xx_0, 0))
+        self.connect((self.band_pass_filter_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.audio_sink_0, 0))
         self.connect((self.fft_filter_xxx_0_0, 0), (self.analog_simple_squelch_cc_0, 0))
         self.connect((self.mmse_resampler_xx_0, 0), (self.analog_nbfm_rx_0, 0))

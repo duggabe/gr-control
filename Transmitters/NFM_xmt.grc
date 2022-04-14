@@ -27,6 +27,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: NFM_xmt
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -72,6 +73,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [656, 12.0]
+    rotation: 0
+    state: true
+- name: pl_enable
+  id: variable_qtgui_check_box
+  parameters:
+    comment: 2,1
+    'false': '0'
+    gui_hint: 2,1,1,1
+    label: PL Tone Enable
+    'true': '1'
+    type: real
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 12.0]
     rotation: 0
     state: true
 - name: pl_freq
@@ -224,7 +242,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [216, 428.0]
+    coordinate: [48, 428.0]
     rotation: 0
     state: true
 - name: audio_source_0
@@ -326,7 +344,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: Audio gain
+    comment: Mic gain
     const: volume
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -344,7 +362,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: Audio level
+    comment: Output Level
     const: audio_lvl
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -355,6 +373,24 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [776, 356.0]
+    rotation: 0
+    state: true
+- name: blocks_multiply_const_vxx_1_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: PL enable
+    const: pl_enable
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [264, 468.0]
     rotation: 0
     state: true
 - name: cessb_clipper_cc_0
@@ -656,7 +692,7 @@ blocks:
 connections:
 - [analog_const_source_x_0, '0', blocks_float_to_complex_0, '1']
 - [analog_nbfm_tx_0, '0', mmse_resampler_xx_0, '0']
-- [analog_sig_source_x_0, '0', blocks_add_xx_0, '0']
+- [analog_sig_source_x_0, '0', blocks_multiply_const_vxx_1_0, '0']
 - [audio_source_0, '0', blocks_multiply_const_vxx_0, '0']
 - [band_pass_filter_0, '0', blocks_add_xx_0, '1']
 - [blocks_add_xx_0, '0', analog_nbfm_tx_0, '0']
@@ -665,6 +701,7 @@ connections:
 - [blocks_multiply_const_vxx_0, '0', blocks_float_to_complex_0, '0']
 - [blocks_multiply_const_vxx_1, '0', blocks_complex_to_float_0, '0']
 - [blocks_multiply_const_vxx_1, '0', qtgui_time_sink_x_0, '0']
+- [blocks_multiply_const_vxx_1_0, '0', blocks_add_xx_0, '0']
 - [cessb_clipper_cc_0, '0', virtual_sink_0, '0']
 - [cessb_stretcher_cc_0, '0', fft_filter_xxx_0_1, '0']
 - [fft_filter_xxx_0_0, '0', cessb_stretcher_cc_0, '0']

@@ -23,6 +23,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: WBFM_stereo
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -250,7 +251,7 @@ blocks:
     alpha8: '1.0'
     alpha9: '1.0'
     axislabels: 'True'
-    bw: samp_rate/rf_decim
+    bw: demod_rate
     color1: '0'
     color10: '0'
     color2: '0'
@@ -292,7 +293,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 280.0]
+    coordinate: [512, 284.0]
     rotation: 0
     state: true
 - name: zeromq_sub_source_0

@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: NFM_xmt
 # Author: Barry Duggan
-# GNU Radio version: 3.10.0.0-rc4
+# GNU Radio version: 3.10.1.1
 
 from packaging.version import Version as StrictVersion
 
@@ -87,6 +87,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.usrp_rate = usrp_rate = 768000
         self.rs_ratio = rs_ratio = 1.040
         self.pl_freq = pl_freq = 0.0
+        self.pl_enable = pl_enable = 0
         self.low_pass_filter_taps = low_pass_filter_taps = firdes.low_pass(1.6, samp_rate, 4000,1000, window.WIN_HAMMING, 6.76)
         self.audio_lvl = audio_lvl = 1.3
 
@@ -119,6 +120,17 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        _pl_enable_check_box = Qt.QCheckBox("PL Tone Enable")
+        self._pl_enable_choices = {True: 1, False: 0}
+        self._pl_enable_choices_inv = dict((v,k) for k,v in self._pl_enable_choices.items())
+        self._pl_enable_callback = lambda i: Qt.QMetaObject.invokeMethod(_pl_enable_check_box, "setChecked", Qt.Q_ARG("bool", self._pl_enable_choices_inv[i]))
+        self._pl_enable_callback(self.pl_enable)
+        _pl_enable_check_box.stateChanged.connect(lambda i: self.set_pl_enable(self._pl_enable_choices[bool(i)]))
+        self.top_grid_layout.addWidget(_pl_enable_check_box, 2, 1, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._audio_lvl_range = Range(0.5, 3.0, 0.1, 1.3, 200)
         self._audio_lvl_win = RangeWidget(self._audio_lvl_range, self.set_audio_lvl, "Output Level", "counter_slider", float, QtCore.Qt.Horizontal)
@@ -192,6 +204,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.cessb_stretcher_cc_0 = cessb.stretcher_cc()
         self.cessb_clipper_cc_0 = cessb.clipper_cc(1.0)
+        self.blocks_multiply_const_vxx_1_0 = blocks.multiply_const_ff(pl_enable)
         self.blocks_multiply_const_vxx_1 = blocks.multiply_const_cc(audio_lvl)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(volume)
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
@@ -224,7 +237,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_const_source_x_0, 0), (self.blocks_float_to_complex_0, 1))
         self.connect((self.analog_nbfm_tx_0, 0), (self.mmse_resampler_xx_0, 0))
-        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_add_xx_0, 0))
+        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_const_vxx_1_0, 0))
         self.connect((self.audio_source_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.band_pass_filter_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.blocks_add_xx_0, 0), (self.analog_nbfm_tx_0, 0))
@@ -233,6 +246,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_float_to_complex_0, 0))
         self.connect((self.blocks_multiply_const_vxx_1, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.blocks_multiply_const_vxx_1, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_1_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.cessb_clipper_cc_0, 0), (self.fft_filter_xxx_0_0, 0))
         self.connect((self.cessb_stretcher_cc_0, 0), (self.fft_filter_xxx_0_1, 0))
         self.connect((self.fft_filter_xxx_0_0, 0), (self.cessb_stretcher_cc_0, 0))
@@ -288,6 +302,14 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.pl_freq = pl_freq
         self._pl_freq_callback(self.pl_freq)
         self.analog_sig_source_x_0.set_frequency(self.pl_freq)
+
+    def get_pl_enable(self):
+        return self.pl_enable
+
+    def set_pl_enable(self, pl_enable):
+        self.pl_enable = pl_enable
+        self._pl_enable_callback(self.pl_enable)
+        self.blocks_multiply_const_vxx_1_0.set_k(self.pl_enable)
 
     def get_low_pass_filter_taps(self):
         return self.low_pass_filter_taps

@@ -9,7 +9,7 @@ This is a modular design allowing various transmit and receive programs to opera
 
 There are three branches of this repository:
 
-* `main` (the default) is the development branch for software not yet put into the maint branches. It contains flowgraphs for GNU Radio 3.9 and 3.10. An additional process is added to implement the relay control using a Raspberry Pi computer.
+* `main` (the default) is the current development branch. It contains flowgraphs for GNU Radio 3.9 and 3.10. An additional process is added to implement the relay controls using a Raspberry Pi computer. There are no current plans to "backport" new code to the "maint" branches.
 * `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load if used on a Raspberry Pi computer.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
 
