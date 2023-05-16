@@ -49,7 +49,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 12.0]
+    coordinate: [432, 12.0]
     rotation: 0
     state: true
 - name: excess_bw
@@ -73,7 +73,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 12.0]
+    coordinate: [352, 12.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -97,7 +97,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 12.0]
+    coordinate: [280, 12.0]
     rotation: 0
     state: enabled
 - name: usrp_rate
@@ -147,13 +147,15 @@ blocks:
     coordinate: [376, 316.0]
     rotation: 0
     state: true
-- name: blocks_throttle_0
-  id: blocks_throttle
+- name: blocks_throttle2_0
+  id: blocks_throttle2
   parameters:
     affinity: ''
     alias: ''
     comment: ''
     ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
     maxoutbuf: '0'
     minoutbuf: '0'
     samples_per_second: samp_rate
@@ -163,7 +165,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 316.0]
+    coordinate: [200, 308.0]
     rotation: 0
     state: true
 - name: digital_constellation_modulator_0
@@ -390,7 +392,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 316.0]
+    coordinate: [40, 316.0]
     rotation: 0
     state: true
 - name: zeromq_pub_sink_0
@@ -399,7 +401,9 @@ blocks:
     address: tcp://127.0.0.1:49203
     affinity: ''
     alias: ''
+    bind: 'True'
     comment: USRP sample rate = 768kHz
+    drop_on_hwm: 'True'
     hwm: '-1'
     key: ''
     pass_tags: 'False'
@@ -410,7 +414,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 324.0]
+    coordinate: [848, 316.0]
     rotation: 0
     state: true
 
@@ -418,13 +422,14 @@ connections:
 - [blocks_message_strobe_0, strobe, digital_crc32_async_bb_1, in]
 - [blocks_multiply_const_vxx_0, '0', mmse_resampler_xx_0, '0']
 - [blocks_multiply_const_vxx_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_throttle_0, '0', blocks_multiply_const_vxx_0, '0']
+- [blocks_throttle2_0, '0', blocks_multiply_const_vxx_0, '0']
 - [digital_constellation_modulator_0, '0', virtual_sink_0, '0']
 - [digital_crc32_async_bb_1, out, epy_block_0, PDU_in]
 - [epy_block_0, PDU_out, pdu_pdu_to_tagged_stream_1, pdus]
 - [mmse_resampler_xx_0, '0', zeromq_pub_sink_0, '0']
 - [pdu_pdu_to_tagged_stream_1, '0', digital_constellation_modulator_0, '0']
-- [virtual_source_0, '0', blocks_throttle_0, '0']
+- [virtual_source_0, '0', blocks_throttle2_0, '0']
 
 metadata:
   file_format: 1
+  grc_version: 3.10.6.0

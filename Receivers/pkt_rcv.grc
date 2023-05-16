@@ -176,7 +176,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 536.0]
+    coordinate: [1200, 424.0]
     rotation: 180
     state: true
 - name: blocks_repack_bits_bb_1
@@ -196,16 +196,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 452.0]
+    coordinate: [792, 540.0]
     rotation: 0
     state: true
-- name: blocks_throttle_0
-  id: blocks_throttle
+- name: blocks_throttle2_0
+  id: blocks_throttle2
   parameters:
     affinity: ''
     alias: ''
     comment: ''
     ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
     maxoutbuf: '0'
     minoutbuf: '0'
     samples_per_second: samp_rate
@@ -215,7 +217,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [512, 180.0]
+    coordinate: [480, 212.0]
     rotation: 0
     state: true
 - name: digital_constellation_decoder_cb_0
@@ -231,7 +233,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 244.0]
+    coordinate: [1040, 284.0]
     rotation: 0
     state: true
 - name: digital_correlate_access_code_xx_ts_0
@@ -250,7 +252,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 444.0]
+    coordinate: [504, 532.0]
     rotation: 0
     state: true
 - name: digital_costas_loop_cc_0
@@ -268,7 +270,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 248.0]
+    coordinate: [776, 288.0]
     rotation: 0
     state: enabled
 - name: digital_crc32_async_bb_0
@@ -284,8 +286,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 532.0]
-    rotation: 180
+    coordinate: [1248, 548.0]
+    rotation: 0
     state: enabled
 - name: digital_diff_decoder_bb_0
   id: digital_diff_decoder_bb
@@ -301,7 +303,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 452.0]
+    coordinate: [176, 540.0]
     rotation: 0
     state: enabled
 - name: digital_linear_equalizer_0
@@ -322,7 +324,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 248.0]
+    coordinate: [504, 320.0]
     rotation: 0
     state: enabled
 - name: digital_map_bb_0
@@ -338,7 +340,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 460.0]
+    coordinate: [376, 548.0]
     rotation: 0
     state: true
 - name: digital_symbol_sync_xx_0
@@ -365,7 +367,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [168, 268.0]
+    coordinate: [176, 340.0]
     rotation: 0
     state: true
 - name: mmse_resampler_xx_0
@@ -383,7 +385,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 152.0]
+    coordinate: [272, 192.0]
     rotation: 0
     state: true
 - name: note_0
@@ -419,7 +421,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 460.0]
+    coordinate: [1000, 548.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0
@@ -511,106 +513,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 300.0]
+    coordinate: [1040, 212.0]
     rotation: 0
     state: enabled
-- name: qtgui_time_sink_x_0
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    axislabels: 'True'
-    color1: blue
-    color10: dark blue
-    color2: red
-    color3: green
-    color4: black
-    color5: cyan
-    color6: magenta
-    color7: yellow
-    color8: dark red
-    color9: dark green
-    comment: ''
-    ctrlpanel: 'True'
-    entags: 'True'
-    grid: 'False'
-    gui_hint: ''
-    label1: Signal 1
-    label10: Signal 10
-    label2: Signal 2
-    label3: Signal 3
-    label4: Signal 4
-    label5: Signal 5
-    label6: Signal 6
-    label7: Signal 7
-    label8: Signal 8
-    label9: Signal 9
-    legend: 'True'
-    marker1: '-1'
-    marker10: '-1'
-    marker2: '-1'
-    marker3: '-1'
-    marker4: '-1'
-    marker5: '-1'
-    marker6: '-1'
-    marker7: '-1'
-    marker8: '-1'
-    marker9: '-1'
-    name: '""'
-    nconnections: '1'
-    size: '1024'
-    srate: samp_rate
-    stemplot: 'False'
-    style1: '1'
-    style10: '1'
-    style2: '1'
-    style3: '1'
-    style4: '1'
-    style5: '1'
-    style6: '1'
-    style7: '1'
-    style8: '1'
-    style9: '1'
-    tr_chan: '0'
-    tr_delay: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_NORM
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '"packet_len"'
-    type: complex
-    update_time: '0.10'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    ylabel: Amplitude
-    ymax: '1'
-    ymin: '-1'
-    yunit: '""'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [680, 116.0]
-    rotation: 0
-    state: disabled
 - name: virtual_sink_0
   id: virtual_sink
   parameters:
@@ -621,7 +526,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 180.0]
+    coordinate: [656, 220.0]
     rotation: 0
     state: true
 - name: virtual_sink_1
@@ -634,7 +539,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 244.0]
+    coordinate: [1272, 284.0]
     rotation: 0
     state: true
 - name: virtual_source_0
@@ -647,7 +552,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 324.0]
+    coordinate: [16, 396.0]
     rotation: 0
     state: true
 - name: virtual_source_1
@@ -660,7 +565,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 460.0]
+    coordinate: [16, 548.0]
     rotation: 0
     state: true
 - name: zeromq_sub_source_0
@@ -669,6 +574,7 @@ blocks:
     address: tcp://127.0.0.1:49201
     affinity: ''
     alias: ''
+    bind: 'False'
     comment: USRP sample rate = 768kHz
     hwm: '-1'
     key: ''
@@ -682,14 +588,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 148.0]
+    coordinate: [16, 156.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_repack_bits_bb_1, '0', pdu_tagged_stream_to_pdu_0, '0']
-- [blocks_throttle_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_throttle_0, '0', virtual_sink_0, '0']
+- [blocks_throttle2_0, '0', virtual_sink_0, '0']
 - [digital_constellation_decoder_cb_0, '0', virtual_sink_1, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_repack_bits_bb_1, '0']
 - [digital_costas_loop_cc_0, '0', digital_constellation_decoder_cb_0, '0']
@@ -699,7 +604,7 @@ connections:
 - [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_map_bb_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_linear_equalizer_0, '0']
-- [mmse_resampler_xx_0, '0', blocks_throttle_0, '0']
+- [mmse_resampler_xx_0, '0', blocks_throttle2_0, '0']
 - [pdu_tagged_stream_to_pdu_0, pdus, digital_crc32_async_bb_0, in]
 - [virtual_source_0, '0', digital_symbol_sync_xx_0, '0']
 - [virtual_source_1, '0', digital_diff_decoder_bb_0, '0']
@@ -707,3 +612,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.6.0
