@@ -171,18 +171,17 @@ cd ~/gr-control/Transmitters
 <a name="loopback"/>
 
 ## Loopback Testing
-A flowgraph is included to allow loopback testing of a transmitter and a receiver without using SDR hardware. It operates **in place of** the `xmt_rcv_switch` program.
+There are two flowgraphs included to allow loopback testing of a transmitter and a receiver without using SDR hardware. Either operates **in place of** the `xmt_rcv_switch` program. The `loopback_test` is a simple one for the NFM and SSB modulation methods. The `chan_loopback` is for the digital modes such as BPSK packet. It allows introduction of noise, frequency offset, and timing offset.
 
 1. Open a terminal window.
 2. Go to the gr-control folder.  
 ```
 cd ~/gr-control
 ```
-3. Execute `loopback_test.py`.  
-```
-python3 -u loopback_test.py
-```
-4. A new window titled `loopback_test` will open showing a chooser for the Sample rate. For the version 3.9 programs, select 768kHz. 
+3. Execute one of the looback programs.  
+    `python3 -u loopback_test.py`  
+    `python3 -u chan_loopback.py`  
+4. A new window will open showing a chooser for the Sample rate. For the version 3.9 and 3.10 programs, select 768kHz. 
 5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`) in separate processes.
 
 <a name="under"/>

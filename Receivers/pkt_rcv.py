@@ -16,8 +16,8 @@ from gnuradio import qtgui
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
-from gnuradio import gr
 from gnuradio.filter import firdes
+from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
@@ -67,13 +67,12 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.sps = sps = 2
+        self.sps = sps = 4
         self.bpsk = bpsk = digital.constellation_bpsk().base()
         self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( bpsk, .0001, sps).base()
         self.usrp_rate = usrp_rate = 768000
         self.thresh = thresh = 1
         self.samp_rate = samp_rate = 48000
-        self.rs_ratio = rs_ratio = 1.0
         self.phase_bw = phase_bw = 0.0628
         self.order = order = 2
         self.excess_bw = excess_bw = 0.35
@@ -83,6 +82,11 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         ##################################################
 
         self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, (-1), '', False)
+        self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
+                interpolation=1,
+                decimation=((int)(usrp_rate/samp_rate)),
+                taps=[],
+                fractional_bw=0)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
             "", #name
@@ -91,7 +95,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         )
         self.qtgui_const_sink_x_0.set_update_time(0.10)
         self.qtgui_const_sink_x_0.set_y_axis((-1), 1)
-        self.qtgui_const_sink_x_0.set_x_axis((-2), 2)
+        self.qtgui_const_sink_x_0.set_x_axis((-4), 4)
         self.qtgui_const_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
         self.qtgui_const_sink_x_0.enable_autoscale(False)
         self.qtgui_const_sink_x_0.enable_grid(False)
@@ -125,7 +129,6 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
         self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
-        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, (((usrp_rate/samp_rate)*rs_ratio)))
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
             digital.TED_MUELLER_AND_MULLER,
             sps,
@@ -140,6 +143,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             [])
         self.digital_map_bb_0 = digital.map_bb([0,1])
         self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 1, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
+        self.digital_fll_band_edge_cc_0 = digital.fll_band_edge_cc(sps, excess_bw, 44, phase_bw)
         self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2, digital.DIFF_DIFFERENTIAL)
         self.digital_crc32_async_bb_0 = digital.crc32_async_bb(True)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, order, False)
@@ -157,17 +161,18 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.blocks_message_debug_1, 'print'))
         self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.digital_crc32_async_bb_0, 'in'))
         self.connect((self.blocks_repack_bits_bb_1, 0), (self.pdu_tagged_stream_to_pdu_0, 0))
-        self.connect((self.blocks_throttle2_0, 0), (self.digital_symbol_sync_xx_0, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.digital_fll_band_edge_cc_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_repack_bits_bb_1, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
+        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
-        self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_throttle2_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.mmse_resampler_xx_0, 0))
+        self.connect((self.rational_resampler_xxx_0, 0), (self.blocks_throttle2_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.rational_resampler_xxx_0, 0))
 
 
     def closeEvent(self, event):
@@ -201,7 +206,6 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
 
     def set_usrp_rate(self, usrp_rate):
         self.usrp_rate = usrp_rate
-        self.mmse_resampler_xx_0.set_resamp_ratio((((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_thresh(self):
         return self.thresh
@@ -215,14 +219,6 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
-        self.mmse_resampler_xx_0.set_resamp_ratio((((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
-
-    def get_rs_ratio(self):
-        return self.rs_ratio
-
-    def set_rs_ratio(self, rs_ratio):
-        self.rs_ratio = rs_ratio
-        self.mmse_resampler_xx_0.set_resamp_ratio((((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_phase_bw(self):
         return self.phase_bw
@@ -230,6 +226,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
     def set_phase_bw(self, phase_bw):
         self.phase_bw = phase_bw
         self.digital_costas_loop_cc_0.set_loop_bandwidth(self.phase_bw)
+        self.digital_fll_band_edge_cc_0.set_loop_bandwidth(self.phase_bw)
         self.digital_symbol_sync_xx_0.set_loop_bandwidth(self.phase_bw)
 
     def get_order(self):

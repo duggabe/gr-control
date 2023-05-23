@@ -88,18 +88,6 @@ blocks:
     coordinate: [344, 76.0]
     rotation: 0
     state: true
-- name: rs_ratio
-  id: variable
-  parameters:
-    comment: ''
-    value: '1.0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [432, 12.0]
-    rotation: 0
-    state: true
 - name: samp_rate
   id: variable
   parameters:
@@ -116,7 +104,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -217,7 +205,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 212.0]
+    coordinate: [432, 172.0]
     rotation: 0
     state: true
 - name: digital_constellation_decoder_cb_0
@@ -306,6 +294,26 @@ blocks:
     coordinate: [176, 540.0]
     rotation: 0
     state: enabled
+- name: digital_fll_band_edge_cc_0
+  id: digital_fll_band_edge_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    filter_size: '44'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    rolloff: excess_bw
+    samps_per_sym: sps
+    type: cc
+    w: phase_bw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 136.0]
+    rotation: 0
+    state: true
 - name: digital_linear_equalizer_0
   id: digital_linear_equalizer
   parameters:
@@ -368,43 +376,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [176, 340.0]
-    rotation: 0
-    state: true
-- name: mmse_resampler_xx_0
-  id: mmse_resampler_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    phase_shift: '0'
-    resamp_ratio: ((usrp_rate/samp_rate)*rs_ratio)
-    type: complex
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [272, 192.0]
-    rotation: 0
-    state: true
-- name: note_0
-  id: note
-  parameters:
-    alias: ''
-    comment: 'The CMA equalizer has been
-
-      replaced by a Linear Equalizer
-
-      and an Adaptive Algorithm for
-
-      version 3.9'
-    note: CMA equalizer replaced
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [840, 12.0]
     rotation: 0
     state: true
 - name: pdu_tagged_stream_to_pdu_0
@@ -505,8 +476,8 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    xmax: '2'
-    xmin: '-2'
+    xmax: '4'
+    xmin: '-4'
     ymax: '1'
     ymin: '-1'
   states:
@@ -516,6 +487,26 @@ blocks:
     coordinate: [1040, 212.0]
     rotation: 0
     state: enabled
+- name: rational_resampler_xxx_0
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: (int)(usrp_rate/samp_rate)
+    fbw: '0'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: '[]'
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [240, 156.0]
+    rotation: 0
+    state: true
 - name: virtual_sink_0
   id: virtual_sink
   parameters:
@@ -526,7 +517,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 220.0]
+    coordinate: [848, 132.0]
     rotation: 0
     state: true
 - name: virtual_sink_1
@@ -588,27 +579,28 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 156.0]
+    coordinate: [16, 148.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_repack_bits_bb_1, '0', pdu_tagged_stream_to_pdu_0, '0']
-- [blocks_throttle2_0, '0', virtual_sink_0, '0']
+- [blocks_throttle2_0, '0', digital_fll_band_edge_cc_0, '0']
 - [digital_constellation_decoder_cb_0, '0', virtual_sink_1, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_repack_bits_bb_1, '0']
 - [digital_costas_loop_cc_0, '0', digital_constellation_decoder_cb_0, '0']
 - [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_0, '0']
 - [digital_crc32_async_bb_0, out, blocks_message_debug_1, print]
 - [digital_diff_decoder_bb_0, '0', digital_map_bb_0, '0']
+- [digital_fll_band_edge_cc_0, '0', virtual_sink_0, '0']
 - [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_map_bb_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_linear_equalizer_0, '0']
-- [mmse_resampler_xx_0, '0', blocks_throttle2_0, '0']
 - [pdu_tagged_stream_to_pdu_0, pdus, digital_crc32_async_bb_0, in]
+- [rational_resampler_xxx_0, '0', blocks_throttle2_0, '0']
 - [virtual_source_0, '0', digital_symbol_sync_xx_0, '0']
 - [virtual_source_1, '0', digital_diff_decoder_bb_0, '0']
-- [zeromq_sub_source_0, '0', mmse_resampler_xx_0, '0']
+- [zeromq_sub_source_0, '0', rational_resampler_xxx_0, '0']
 
 metadata:
   file_format: 1
