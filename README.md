@@ -3,7 +3,7 @@ Modular transmit / receive station control
 
 This package contains GNU Radio flowgraphs for transmitters and receivers which work in conjunction with a station control module. The station control module contains SDR source and sink blocks, switching logic to control transmit / receive functions, antenna and power amplifier relay controls, and LED status indicators.
 
-This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept. It is a "testbed" to support additional modules while minimizing duplication of common functions.
+This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept and is a "testbed" to support additional modules while minimizing duplication of common functions.
 
 ## Versions
 
@@ -50,7 +50,7 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. To use the transmitters in this main branch, you must install gr-cessb as follows:  
+5. To use the NFM and SSB transmitters in this main branch, you must install gr-cessb as follows:  
 
     cd  
     git clone https://github.com/drmpeg/gr-cessb.git  

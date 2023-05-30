@@ -1,37 +1,101 @@
 """
-Embedded Python Block
+Embedded Python Block: File Source to Tagged Stream
 """
 
 import numpy as np
 from gnuradio import gr
+import time
 import pmt
+import os.path
+import sys
 
 class blk(gr.sync_block):
-    """Packet Format"""
+    def __init__(self, FileName='None', Pkt_len=52):
+        gr.sync_block.__init__(
+            self,
+            name='EPB: File Source to Tagged Stream',
+            in_sig=None,
+            out_sig=[np.uint8])
+        self.FileName = FileName
+        self.Pkt_len = Pkt_len
+        self.state = 0
+        self.pre_count = 0
+        self.indx = 0
+        if (os.path.exists(self.FileName)):
+            # open input file
+            self.f_in = open (self.FileName, 'rb')
+            self._eof = False
+        else:
+            print(FileName, 'does not exist')
+            self._eof = True
+            self.state = 3
 
-    def __init__(self):
-        gr.sync_block.__init__(self,
-            name = "Packet Format",
-            in_sig = None,
-            out_sig = None)
-        self.message_port_register_in(pmt.intern('PDU_in'))
-        self.message_port_register_out(pmt.intern('PDU_out'))
-        self.set_msg_handler(pmt.intern('PDU_in'), self.handle_msg)
+        self.char_list = [37,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,93]
+        self.c_len = len (self.char_list)
+        # print (self.c_len)
 
-    def handle_msg(self, msg):
-        inMsg = pmt.to_python (msg)
-        pld = inMsg[1]
-        # print (pld)
-        mLen = len(pld)
-        # print (mLen)
-        if (mLen > 0):
-            char_list = [85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,225,90,232,147]
-            char_list.append (mLen >> 8)
-            char_list.append (mLen & 255)
-            char_list.append (mLen >> 8)
-            char_list.append (mLen & 255)
-            char_list.extend (pld)
-            # print (char_list)
-            out_len = len(char_list)
-            # print (out_len)
-            self.message_port_pub(pmt.intern('PDU_out'), pmt.cons(pmt.PMT_NIL,pmt.init_u8vector(out_len,(char_list))))
+    def work(self, input_items, output_items):
+        if (self.state == 0):
+            # send phasing filler
+            key1 = pmt.intern("packet_len")
+            val1 = pmt.from_long(self.c_len)
+            self.add_item_tag(0, # Write to output port 0
+                self.indx,   # Index of the tag
+                key1,   # Key of the tag
+                val1    # Value of the tag
+                )
+            self.indx += self.c_len
+            i = 0
+            while (i < self.c_len):
+                output_items[0][i] = self.char_list[i]
+                i += 1
+            self.pre_count += 1
+            if (self.pre_count > 99):
+                self.state = 1
+            return (self.c_len)
+        elif (self.state == 1):
+            while (not (self._eof)):
+                buff = self.f_in.read (self.Pkt_len)
+                b_len = len(buff)
+                if b_len == 0:
+                    print ('End of file')
+                    self._eof = True
+                    self.f_in.close()
+                    self.state = 2
+                    self.pre_count = 0
+                    break
+                # delay 500 ms
+                time.sleep (0.5)
+                key0 = pmt.intern("packet_len")
+                val0 = pmt.from_long(b_len)
+                self.add_item_tag(0, # Write to output port 0
+                    self.indx,   # Index of the tag
+                    key0,   # Key of the tag
+                    val0    # Value of the tag
+                    )
+                self.indx += b_len
+                i = 0
+                while (i < b_len):
+                    output_items[0][i] = buff[i]
+                    i += 1
+                return (b_len)
+        elif (self.state == 2):
+            # send idle filler
+            key1 = pmt.intern("packet_len")
+            val1 = pmt.from_long(self.c_len)
+            self.add_item_tag(0, # Write to output port 0
+                self.indx,   # Index of the tag
+                key1,   # Key of the tag
+                val1    # Value of the tag
+                )
+            self.indx += self.c_len
+            i = 0
+            while (i < self.c_len):
+                output_items[0][i] = self.char_list[i]
+                i += 1
+            self.pre_count += 1
+            if (self.pre_count > 4):
+                self.state = 3
+            return (self.c_len)
+        return (0)
+
