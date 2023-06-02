@@ -9,7 +9,7 @@ options:
     description: packet transmit
     gen_cmake: 'On'
     gen_linking: dynamic
-    generate_options: no_gui
+    generate_options: qt_gui
     hier_block_src_path: '.:'
     id: pkt_xmt
     max_nouts: '0'
@@ -124,22 +124,24 @@ blocks:
     coordinate: [192, 76.0]
     rotation: 0
     state: true
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
+- name: blocks_repack_bits_bb_1_0
+  id: blocks_repack_bits_bb
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
-    const: '0.5'
+    align_output: 'False'
+    comment: MSB
+    endianness: gr.GR_MSB_FIRST
+    k: '1'
+    l: '8'
+    len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
-    type: complex
-    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [472, 316.0]
+    coordinate: [648, 308.0]
     rotation: 0
     state: true
 - name: blocks_tagged_stream_mux_0
@@ -159,7 +161,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 152.0]
+    coordinate: [840, 144.0]
     rotation: 0
     state: true
 - name: blocks_throttle2_0_0
@@ -183,6 +185,21 @@ blocks:
     coordinate: [312, 164.0]
     rotation: 0
     state: true
+- name: blocks_uchar_to_float_0_0_0_0
+  id: blocks_uchar_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 440.0]
+    rotation: 0
+    state: enabled
 - name: digital_constellation_modulator_0
   id: digital_constellation_modulator
   parameters:
@@ -202,25 +219,23 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 292.0]
+    coordinate: [856, 292.0]
     rotation: 0
     state: enabled
-- name: digital_crc32_bb_0
-  id: digital_crc32_bb
+- name: digital_hdlc_framer_pb_0
+  id: digital_hdlc_framer_pb
   parameters:
     affinity: ''
     alias: ''
-    check: 'False'
-    comment: ''
-    lengthtagname: '"packet_len"'
+    comment: packed -> unpacked
+    frame_tag_name: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
-    packed: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [496, 156.0]
+    coordinate: [424, 316.0]
     rotation: 0
     state: true
 - name: digital_protocol_formatter_bb_0
@@ -237,14 +252,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 124.0]
+    coordinate: [552, 124.0]
     rotation: 0
     state: true
 - name: epy_block_0
   id: epy_block
   parameters:
-    FileName: '"./gr-logo.b64"'
-    Pkt_len: '52'
+    FileName: '"./gr-logo.png"'
+    Pkt_len: '1024'
     _source_code: "\"\"\"\nEmbedded Python Block: File Source to Tagged Stream\n\"\
       \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport time\nimport pmt\n\
       import os.path\nimport sys\n\nclass blk(gr.sync_block):\n    def __init__(self,\
@@ -260,8 +275,9 @@ blocks:
       \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
       \ 85,85,85,93]\n        self.c_len = len (self.char_list)\n        # print (self.c_len)\n\
       \n    def work(self, input_items, output_items):\n        if (self.state ==\
-      \ 0):\n            # send phasing filler\n            key1 = pmt.intern(\"packet_len\"\
-      )\n            val1 = pmt.from_long(self.c_len)\n            self.add_item_tag(0,\
+      \ 0):\n            # send phasing filler\n            # delay 10 ms\n      \
+      \      time.sleep (0.010)\n            key1 = pmt.intern(\"packet_len\")\n \
+      \           val1 = pmt.from_long(self.c_len)\n            self.add_item_tag(0,\
       \ # Write to output port 0\n                self.indx,   # Index of the tag\n\
       \                key1,   # Key of the tag\n                val1    # Value of\
       \ the tag\n                )\n            self.indx += self.c_len\n        \
@@ -289,7 +305,7 @@ blocks:
       \ the tag\n                )\n            self.indx += self.c_len\n        \
       \    i = 0\n            while (i < self.c_len):\n                output_items[0][i]\
       \ = self.char_list[i]\n                i += 1\n            self.pre_count +=\
-      \ 1\n            if (self.pre_count > 4):\n                self.state = 3\n\
+      \ 1\n            if (self.pre_count > 39):\n                self.state = 3\n\
       \            return (self.c_len)\n        return (0)\n\n"
     affinity: ''
     alias: ''
@@ -305,6 +321,120 @@ blocks:
     coordinate: [16, 164.0]
     rotation: 0
     state: true
+- name: pdu_tagged_stream_to_pdu_0_0_0
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: '"packet_len"'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 316.0]
+    rotation: 0
+    state: true
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: 1,0,1,3
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: 1,0,1,3
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: Transmit data
+    nconnections: '1'
+    size: '256'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0.0'
+    tr_level: '0.1'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '"packet_len"'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1.1'
+    ymin: '-0.1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 412.0]
+    rotation: 0
+    state: enabled
 - name: rational_resampler_xxx_0
   id: rational_resampler_xxx
   parameters:
@@ -322,7 +452,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 292.0]
+    coordinate: [1096, 292.0]
     rotation: 0
     state: true
 - name: virtual_sink_0_0
@@ -335,7 +465,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 164.0]
+    coordinate: [1080, 156.0]
     rotation: 0
     state: true
 - name: virtual_source_0
@@ -348,7 +478,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [72, 316.0]
+    coordinate: [16, 316.0]
     rotation: 0
     state: true
 - name: zeromq_pub_sink_0
@@ -370,21 +500,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 284.0]
+    coordinate: [1288, 284.0]
     rotation: 0
     state: true
 
 connections:
-- [blocks_multiply_const_vxx_0, '0', rational_resampler_xxx_0, '0']
+- [blocks_repack_bits_bb_1_0, '0', digital_constellation_modulator_0, '0']
 - [blocks_tagged_stream_mux_0, '0', virtual_sink_0_0, '0']
-- [blocks_throttle2_0_0, '0', digital_crc32_bb_0, '0']
-- [digital_constellation_modulator_0, '0', blocks_multiply_const_vxx_0, '0']
-- [digital_crc32_bb_0, '0', blocks_tagged_stream_mux_0, '1']
-- [digital_crc32_bb_0, '0', digital_protocol_formatter_bb_0, '0']
+- [blocks_throttle2_0_0, '0', blocks_tagged_stream_mux_0, '1']
+- [blocks_throttle2_0_0, '0', digital_protocol_formatter_bb_0, '0']
+- [blocks_uchar_to_float_0_0_0_0, '0', qtgui_time_sink_x_0, '0']
+- [digital_constellation_modulator_0, '0', rational_resampler_xxx_0, '0']
+- [digital_hdlc_framer_pb_0, '0', blocks_repack_bits_bb_1_0, '0']
+- [digital_hdlc_framer_pb_0, '0', blocks_uchar_to_float_0_0_0_0, '0']
 - [digital_protocol_formatter_bb_0, '0', blocks_tagged_stream_mux_0, '0']
 - [epy_block_0, '0', blocks_throttle2_0_0, '0']
+- [pdu_tagged_stream_to_pdu_0_0_0, pdus, digital_hdlc_framer_pb_0, in]
 - [rational_resampler_xxx_0, '0', zeromq_pub_sink_0, '0']
-- [virtual_source_0, '0', digital_constellation_modulator_0, '0']
+- [virtual_source_0, '0', pdu_tagged_stream_to_pdu_0_0_0, '0']
 
 metadata:
   file_format: 1
