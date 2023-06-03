@@ -258,7 +258,7 @@ blocks:
 - name: epy_block_0
   id: epy_block
   parameters:
-    FileName: '"./gr-logo.png"'
+    FileName: '"../gr-logo.png"'
     Pkt_len: '1024'
     _source_code: "\"\"\"\nEmbedded Python Block: File Source to Tagged Stream\n\"\
       \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport time\nimport pmt\n\

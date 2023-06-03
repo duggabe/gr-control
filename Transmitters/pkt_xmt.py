@@ -139,7 +139,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.pdu_tagged_stream_to_pdu_0_0_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, "packet_len")
-        self.epy_block_0 = epy_block_0.blk(FileName="./gr-logo.png", Pkt_len=1024)
+        self.epy_block_0 = epy_block_0.blk(FileName="../gr-logo.png", Pkt_len=1024)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, "packet_len")
         self.digital_hdlc_framer_pb_0 = digital.hdlc_framer_pb("packet_len")
         self.digital_constellation_modulator_0 = digital.generic_mod(
