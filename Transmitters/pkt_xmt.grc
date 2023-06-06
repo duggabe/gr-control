@@ -124,6 +124,23 @@ blocks:
     coordinate: [192, 76.0]
     rotation: 0
     state: true
+- name: InFile
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: File Name
+    short_id: ''
+    type: str
+    value: default
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 12.0]
+    rotation: 0
+    state: true
 - name: blocks_repack_bits_bb_1_0
   id: blocks_repack_bits_bb
   parameters:
@@ -258,7 +275,7 @@ blocks:
 - name: epy_block_0
   id: epy_block
   parameters:
-    FileName: '"../gr-logo.png"'
+    FileName: InFile
     Pkt_len: '1024'
     _source_code: "\"\"\"\nEmbedded Python Block: File Source to Tagged Stream\n\"\
       \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport time\nimport pmt\n\
@@ -309,7 +326,9 @@ blocks:
       \            return (self.c_len)\n        return (0)\n\n"
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Filename is specified on the command line, e.g.:
+
+      python3 pkt_xmt.py --InFile="../gr-logo.png"'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:

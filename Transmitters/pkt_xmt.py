@@ -34,7 +34,7 @@ import sip
 
 class pkt_xmt(gr.top_block, Qt.QWidget):
 
-    def __init__(self):
+    def __init__(self, InFile='default'):
         gr.top_block.__init__(self, "pkt_xmt", catch_exceptions=True)
         Qt.QWidget.__init__(self)
         self.setWindowTitle("pkt_xmt")
@@ -64,6 +64,11 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(self.settings.value("geometry"))
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+
+        ##################################################
+        # Parameters
+        ##################################################
+        self.InFile = InFile
 
         ##################################################
         # Variables
@@ -139,7 +144,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.pdu_tagged_stream_to_pdu_0_0_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, "packet_len")
-        self.epy_block_0 = epy_block_0.blk(FileName="../gr-logo.png", Pkt_len=1024)
+        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=1024)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, "packet_len")
         self.digital_hdlc_framer_pb_0 = digital.hdlc_framer_pb("packet_len")
         self.digital_constellation_modulator_0 = digital.generic_mod(
@@ -181,6 +186,13 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.wait()
 
         event.accept()
+
+    def get_InFile(self):
+        return self.InFile
+
+    def set_InFile(self, InFile):
+        self.InFile = InFile
+        self.epy_block_0.FileName = self.InFile
 
     def get_access_key(self):
         return self.access_key
@@ -229,15 +241,25 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
 
 
 
+def argument_parser():
+    description = 'packet transmit'
+    parser = ArgumentParser(description=description)
+    parser.add_argument(
+        "--InFile", dest="InFile", type=str, default='default',
+        help="Set File Name [default=%(default)r]")
+    return parser
+
 
 def main(top_block_cls=pkt_xmt, options=None):
+    if options is None:
+        options = argument_parser().parse_args()
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
         style = gr.prefs().get_string('qtgui', 'style', 'raster')
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls()
+    tb = top_block_cls(InFile=options.InFile)
 
     tb.start()
 
