@@ -8,6 +8,7 @@ import time
 import pmt
 import os.path
 import sys
+import base64
 
 class blk(gr.sync_block):
     def __init__(self, FileName='None', Pkt_len=52):
@@ -66,21 +67,25 @@ class blk(gr.sync_block):
                     self.state = 2
                     self.pre_count = 0
                     break
+                # convert to Base64
+                encoded = base64.b64encode (buff)
+                e_len = len(encoded)
+                print ('b64 length =', e_len)
                 # delay 500 ms
                 time.sleep (0.5)
                 key0 = pmt.intern("packet_len")
-                val0 = pmt.from_long(b_len)
+                val0 = pmt.from_long(e_len)
                 self.add_item_tag(0, # Write to output port 0
                     self.indx,   # Index of the tag
                     key0,   # Key of the tag
                     val0    # Value of the tag
                     )
-                self.indx += b_len
+                self.indx += e_len
                 i = 0
-                while (i < b_len):
-                    output_items[0][i] = buff[i]
+                while (i < e_len):
+                    output_items[0][i] = encoded[i]
                     i += 1
-                return (b_len)
+                return (e_len)
         elif (self.state == 2):
             # send idle filler
             key1 = pmt.intern("packet_len")

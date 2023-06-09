@@ -25,7 +25,6 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio import gr, pdu
 from gnuradio import zeromq
 import pkt_xmt_epy_block_0 as epy_block_0  # embedded python block
 import sip
@@ -143,10 +142,9 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.pdu_tagged_stream_to_pdu_0_0_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, "packet_len")
-        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=1024)
+        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=1020)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, "packet_len")
-        self.digital_hdlc_framer_pb_0 = digital.hdlc_framer_pb("packet_len")
+        self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=bpsk,
             differential=True,
@@ -159,21 +157,20 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.blocks_uchar_to_float_0_0_0_0 = blocks.uchar_to_float()
         self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_char*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
-        self.blocks_repack_bits_bb_1_0 = blocks.repack_bits_bb(1, 8, "packet_len", False, gr.GR_MSB_FIRST)
+        self.blocks_repack_bits_bb_0_0 = blocks.repack_bits_bb(8, 1, "packet_len", False, gr.GR_MSB_FIRST)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.pdu_tagged_stream_to_pdu_0_0_0, 'pdus'), (self.digital_hdlc_framer_pb_0, 'in'))
-        self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.pdu_tagged_stream_to_pdu_0_0_0, 0))
-        self.connect((self.blocks_throttle2_0_0, 0), (self.blocks_tagged_stream_mux_0, 1))
-        self.connect((self.blocks_throttle2_0_0, 0), (self.digital_protocol_formatter_bb_0, 0))
+        self.connect((self.blocks_repack_bits_bb_0_0, 0), (self.blocks_uchar_to_float_0_0_0_0, 0))
+        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_repack_bits_bb_0_0, 0))
+        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_constellation_modulator_0, 0))
+        self.connect((self.blocks_throttle2_0_0, 0), (self.digital_crc32_bb_0, 0))
         self.connect((self.blocks_uchar_to_float_0_0_0_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.rational_resampler_xxx_0, 0))
-        self.connect((self.digital_hdlc_framer_pb_0, 0), (self.blocks_repack_bits_bb_1_0, 0))
-        self.connect((self.digital_hdlc_framer_pb_0, 0), (self.blocks_uchar_to_float_0_0_0_0, 0))
+        self.connect((self.digital_crc32_bb_0, 0), (self.blocks_tagged_stream_mux_0, 1))
+        self.connect((self.digital_crc32_bb_0, 0), (self.digital_protocol_formatter_bb_0, 0))
         self.connect((self.digital_protocol_formatter_bb_0, 0), (self.blocks_tagged_stream_mux_0, 0))
         self.connect((self.epy_block_0, 0), (self.blocks_throttle2_0_0, 0))
         self.connect((self.rational_resampler_xxx_0, 0), (self.zeromq_pub_sink_0, 0))
