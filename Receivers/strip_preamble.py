@@ -13,7 +13,7 @@ import os.path
 import sys
 import base64
 
-_debug = 1          # set to zero to turn off diagnostics
+_debug = 0          # set to zero to turn off diagnostics
 state = 0
 Pkt_len = 52
 
@@ -44,7 +44,7 @@ while True:
             data = base64.b64decode(buff)
             f_out.write (data)
             if (_debug):
-                print ("end of preamble")
+                print ("End of preamble")
             state = 1
             continue
     elif (state == 1):
@@ -54,10 +54,24 @@ while True:
             print ('End of file')
             break
         if (buff[0] == 37):     # '%'
-            if (_debug):
-                print ("buff = ", buff)
             if (buff == b'%UUU'):
-                print ("End of text\n")
+                print ("End of text")
+                buff = f_in.read(4)     # skip next four 'U's
+                rcv_fn = []
+                i = 0
+                while (i < 44):
+                    ch = f_in.read(1)
+                    if (ch == b'%'):
+                        break
+                    rcv_fn.append((ord)(ch))
+                    i += 1
+                rf_len = len (rcv_fn)
+                x = 0
+                while (x < rf_len):
+                    rcv_fn[x] = str((chr)(rcv_fn[x]))
+                    x += 1
+                ofn = "".join(rcv_fn)
+                print ("Transmitted file name:",ofn)
                 state = 2
                 break
         else:

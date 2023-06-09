@@ -22,12 +22,15 @@ class blk(gr.sync_block):
         self.state = 0
         self.pre_count = 0
         self.indx = 0
+        self._debug = 0
         if (os.path.exists(self.FileName)):
             # open input file
             self.f_in = open (self.FileName, 'rb')
             self._eof = False
+            if (self._debug):
+                print ("File name:", self.FileName)
         else:
-            print(FileName, 'does not exist')
+            print(self.FileName, 'does not exist')
             self._eof = True
             self.state = 3
 
@@ -70,7 +73,8 @@ class blk(gr.sync_block):
                 # convert to Base64
                 encoded = base64.b64encode (buff)
                 e_len = len(encoded)
-                print ('b64 length =', e_len)
+                if (self._debug):
+                    print ('b64 length =', e_len)
                 # delay 500 ms
                 time.sleep (0.5)
                 key0 = pmt.intern("packet_len")
@@ -87,7 +91,31 @@ class blk(gr.sync_block):
                     i += 1
                 return (e_len)
         elif (self.state == 2):
-            # send idle filler
+            # send file name
+            fn_len = len (self.FileName)
+            key1 = pmt.intern("packet_len")
+            val1 = pmt.from_long(fn_len+8)
+            self.add_item_tag(0, # Write to output port 0
+                self.indx,   # Index of the tag
+                key1,   # Key of the tag
+                val1    # Value of the tag
+                )
+            self.indx += (fn_len+8)
+            i = 0
+            while (i < 8):
+                output_items[0][i] = self.char_list[i]
+                i += 1
+            j = 0
+            while (i < (fn_len+8)):
+                output_items[0][i] = ord(self.FileName[j])
+                i += 1
+                j += 1
+            self.state = 3
+            return (fn_len+8)
+        elif (self.state == 3):
+            # send post filler
+            # delay 10 ms
+            time.sleep (0.010)
             key1 = pmt.intern("packet_len")
             val1 = pmt.from_long(self.c_len)
             self.add_item_tag(0, # Write to output port 0
@@ -102,7 +130,7 @@ class blk(gr.sync_block):
                 i += 1
             self.pre_count += 1
             if (self.pre_count > 39):
-                self.state = 3
+                self.state = 4
             return (self.c_len)
         return (0)
 

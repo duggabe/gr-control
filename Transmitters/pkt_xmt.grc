@@ -286,31 +286,33 @@ blocks:
       \            self,\n            name='EPB: File Source to Tagged Stream',\n\
       \            in_sig=None,\n            out_sig=[np.uint8])\n        self.FileName\
       \ = FileName\n        self.Pkt_len = Pkt_len\n        self.state = 0\n     \
-      \   self.pre_count = 0\n        self.indx = 0\n        if (os.path.exists(self.FileName)):\n\
-      \            # open input file\n            self.f_in = open (self.FileName,\
-      \ 'rb')\n            self._eof = False\n        else:\n            print(FileName,\
-      \ 'does not exist')\n            self._eof = True\n            self.state =\
-      \ 3\n\n        self.char_list = [37,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
-      \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
-      \ 85,85,85,93]\n        self.c_len = len (self.char_list)\n        # print (self.c_len)\n\
-      \n    def work(self, input_items, output_items):\n        if (self.state ==\
-      \ 0):\n            # send phasing filler\n            # delay 10 ms\n      \
-      \      time.sleep (0.010)\n            key1 = pmt.intern(\"packet_len\")\n \
-      \           val1 = pmt.from_long(self.c_len)\n            self.add_item_tag(0,\
-      \ # Write to output port 0\n                self.indx,   # Index of the tag\n\
-      \                key1,   # Key of the tag\n                val1    # Value of\
-      \ the tag\n                )\n            self.indx += self.c_len\n        \
-      \    i = 0\n            while (i < self.c_len):\n                output_items[0][i]\
-      \ = self.char_list[i]\n                i += 1\n            self.pre_count +=\
-      \ 1\n            if (self.pre_count > 99):\n                self.state = 1\n\
-      \            return (self.c_len)\n        elif (self.state == 1):\n        \
-      \    while (not (self._eof)):\n                buff = self.f_in.read (self.Pkt_len)\n\
-      \                b_len = len(buff)\n                if b_len == 0:\n       \
-      \             print ('End of file')\n                    self._eof = True\n\
-      \                    self.f_in.close()\n                    self.state = 2\n\
-      \                    self.pre_count = 0\n                    break\n       \
-      \         # convert to Base64\n                encoded = base64.b64encode (buff)\n\
-      \                e_len = len(encoded)\n                print ('b64 length =',\
+      \   self.pre_count = 0\n        self.indx = 0\n        self._debug = 0\n   \
+      \     if (os.path.exists(self.FileName)):\n            # open input file\n \
+      \           self.f_in = open (self.FileName, 'rb')\n            self._eof =\
+      \ False\n            if (self._debug):\n                print (\"File name:\"\
+      , self.FileName)\n        else:\n            print(self.FileName, 'does not\
+      \ exist')\n            self._eof = True\n            self.state = 3\n\n    \
+      \    self.char_list = [37,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
+      \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,93]\n        self.c_len\
+      \ = len (self.char_list)\n        # print (self.c_len)\n\n    def work(self,\
+      \ input_items, output_items):\n        if (self.state == 0):\n            #\
+      \ send phasing filler\n            # delay 10 ms\n            time.sleep (0.010)\n\
+      \            key1 = pmt.intern(\"packet_len\")\n            val1 = pmt.from_long(self.c_len)\n\
+      \            self.add_item_tag(0, # Write to output port 0\n               \
+      \ self.indx,   # Index of the tag\n                key1,   # Key of the tag\n\
+      \                val1    # Value of the tag\n                )\n           \
+      \ self.indx += self.c_len\n            i = 0\n            while (i < self.c_len):\n\
+      \                output_items[0][i] = self.char_list[i]\n                i +=\
+      \ 1\n            self.pre_count += 1\n            if (self.pre_count > 99):\n\
+      \                self.state = 1\n            return (self.c_len)\n        elif\
+      \ (self.state == 1):\n            while (not (self._eof)):\n               \
+      \ buff = self.f_in.read (self.Pkt_len)\n                b_len = len(buff)\n\
+      \                if b_len == 0:\n                    print ('End of file')\n\
+      \                    self._eof = True\n                    self.f_in.close()\n\
+      \                    self.state = 2\n                    self.pre_count = 0\n\
+      \                    break\n                # convert to Base64\n          \
+      \      encoded = base64.b64encode (buff)\n                e_len = len(encoded)\n\
+      \                if (self._debug):\n                    print ('b64 length =',\
       \ e_len)\n                # delay 500 ms\n                time.sleep (0.5)\n\
       \                key0 = pmt.intern(\"packet_len\")\n                val0 = pmt.from_long(e_len)\n\
       \                self.add_item_tag(0, # Write to output port 0\n           \
@@ -319,14 +321,25 @@ blocks:
       \       )\n                self.indx += e_len\n                i = 0\n     \
       \           while (i < e_len):\n                    output_items[0][i] = encoded[i]\n\
       \                    i += 1\n                return (e_len)\n        elif (self.state\
-      \ == 2):\n            # send idle filler\n            key1 = pmt.intern(\"packet_len\"\
-      )\n            val1 = pmt.from_long(self.c_len)\n            self.add_item_tag(0,\
+      \ == 2):\n            # send file name\n            fn_len = len (self.FileName)\n\
+      \            key1 = pmt.intern(\"packet_len\")\n            val1 = pmt.from_long(fn_len+8)\n\
+      \            self.add_item_tag(0, # Write to output port 0\n               \
+      \ self.indx,   # Index of the tag\n                key1,   # Key of the tag\n\
+      \                val1    # Value of the tag\n                )\n           \
+      \ self.indx += (fn_len+8)\n            i = 0\n            while (i < 8):\n \
+      \               output_items[0][i] = self.char_list[i]\n                i +=\
+      \ 1\n            j = 0\n            while (i < (fn_len+8)):\n              \
+      \  output_items[0][i] = ord(self.FileName[j])\n                i += 1\n    \
+      \            j += 1\n            self.state = 3\n            return (fn_len+8)\n\
+      \        elif (self.state == 3):\n            # send post filler\n         \
+      \   # delay 10 ms\n            time.sleep (0.010)\n            key1 = pmt.intern(\"\
+      packet_len\")\n            val1 = pmt.from_long(self.c_len)\n            self.add_item_tag(0,\
       \ # Write to output port 0\n                self.indx,   # Index of the tag\n\
       \                key1,   # Key of the tag\n                val1    # Value of\
       \ the tag\n                )\n            self.indx += self.c_len\n        \
       \    i = 0\n            while (i < self.c_len):\n                output_items[0][i]\
       \ = self.char_list[i]\n                i += 1\n            self.pre_count +=\
-      \ 1\n            if (self.pre_count > 39):\n                self.state = 3\n\
+      \ 1\n            if (self.pre_count > 39):\n                self.state = 4\n\
       \            return (self.c_len)\n        return (0)\n\n"
     affinity: ''
     alias: ''
