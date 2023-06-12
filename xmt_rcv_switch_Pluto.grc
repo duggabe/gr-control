@@ -40,7 +40,7 @@ blocks:
     gui_hint: 9,0,1,1
     label: Receive Freq
     type: real
-    value: 144.92e6
+    value: 432.2e6
   states:
     bus_sink: false
     bus_source: false
@@ -123,7 +123,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '89'
-    value: '50'
+    value: '0'
     widget: slider
   states:
     bus_sink: false
@@ -465,7 +465,7 @@ blocks:
 - name: zeromq_pub_msg_sink_0
   id: zeromq_pub_msg_sink
   parameters:
-    address: tcp://192.168.1.194:49202
+    address: tcp://127.0.0.1:49202
     affinity: ''
     alias: ''
     bind: 'True'
@@ -484,7 +484,9 @@ blocks:
     address: tcp://127.0.0.1:49201
     affinity: ''
     alias: ''
+    bind: 'True'
     comment: ''
+    drop_on_hwm: 'True'
     hwm: '-1'
     key: ''
     pass_tags: 'False'
@@ -495,13 +497,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 212.0]
+    coordinate: [792, 204.0]
     rotation: 0
     state: true
 - name: zeromq_sub_msg_source_0
   id: zeromq_sub_msg_source
   parameters:
-    address: tcp://192.168.1.137:49204
+    address: tcp://127.0.0.1:49204
     affinity: ''
     alias: ''
     bind: 'False'
@@ -522,6 +524,7 @@ blocks:
     address: tcp://127.0.0.1:49203
     affinity: ''
     alias: ''
+    bind: 'False'
     comment: ''
     hwm: '-1'
     key: ''
@@ -556,3 +559,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.6.0

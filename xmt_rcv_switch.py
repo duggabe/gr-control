@@ -8,33 +8,23 @@
 # Title: xmt_rcv_switch
 # Author: Barry Duggan
 # Description: Station control module
-# GNU Radio version: 3.10.1.1
+# GNU Radio version: 3.10.6.0
 
 from packaging.version import Version as StrictVersion
-
-if __name__ == '__main__':
-    import ctypes
-    import sys
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary('libX11.so')
-            x11.XInitThreads()
-        except:
-            print("Warning: failed to XInitThreads()")
-
 from PyQt5 import Qt
+from gnuradio import qtgui
 from PyQt5.QtCore import QObject, pyqtSlot
-from gnuradio import eng_notation
 from gnuradio import analog
 from gnuradio import blocks
+from gnuradio import eng_notation
 from gnuradio import gr
 from gnuradio.filter import firdes
 from gnuradio.fft import window
 import sys
 import signal
+from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
-from gnuradio import qtgui
 from gnuradio import uhd
 import time
 from gnuradio import zeromq
@@ -43,8 +33,6 @@ from PyQt5 import QtCore
 import xmt_rcv_switch_epy_block_0 as epy_block_0  # embedded python block
 
 
-
-from gnuradio import qtgui
 
 class xmt_rcv_switch(gr.top_block, Qt.QWidget):
 
@@ -55,8 +43,8 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -76,14 +64,14 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(self.settings.value("geometry").toByteArray())
             else:
                 self.restoreGeometry(self.settings.value("geometry"))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
         ##################################################
         # Variables
         ##################################################
         self.offset = offset = 0
-        self.freq = freq = 144.92e6
+        self.freq = freq = 432.2e6
         self.tx_freq = tx_freq = freq+offset
         self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
         self.tx_gain = tx_gain = 0.5
@@ -95,6 +83,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
+
         self._tx_gain_range = Range(0, 1.00, 0.1, 0.5, 200)
         self._tx_gain_win = RangeWidget(self._tx_gain_range, self.set_tx_gain, "Tx gain", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._tx_gain_win, 2, 0, 1, 3)
@@ -120,10 +109,10 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
-        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://192.168.1.137:49204', 100, False)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
-        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://192.168.1.194:49202', 100, True)
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, (-1), '', False)
+        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://127.0.0.1:49204', 100, False)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, (-1), '', True, True)
+        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://127.0.0.1:49202', 100, True)
         self._variable_qtgui_label_0_tool_bar = Qt.QToolBar(self)
 
         if None:
@@ -170,15 +159,10 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
         self.uhd_usrp_sink_0.set_bandwidth(200000, 0)
         self.uhd_usrp_sink_0.set_normalized_gain(tx_gain, 0)
-        if int == bool:
-        	self._state_choices = {'Pressed': bool(1), 'Released': bool(0)}
-        elif int == str:
-        	self._state_choices = {'Pressed': "1".replace("'",""), 'Released': "0".replace("'","")}
-        else:
-        	self._state_choices = {'Pressed': 1, 'Released': 0}
+        self._state_choices = {'Pressed': 1, 'Released': 0}
 
-        _state_toggle_button = qtgui.ToggleButton(self.set_state, 'Transmit', self._state_choices, False,"'value'".replace("'",""))
-        _state_toggle_button.setColors("default","black","red","black")
+        _state_toggle_button = qtgui.ToggleButton(self.set_state, 'Transmit', self._state_choices, False, 'value')
+        _state_toggle_button.setColors("default", "black", "red", "black")
         self.state = _state_toggle_button
 
         self.top_grid_layout.addWidget(_state_toggle_button, 10, 2, 1, 1)

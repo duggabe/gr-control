@@ -41,8 +41,8 @@ class blk(gr.sync_block):
     def work(self, input_items, output_items):
         if (self.state == 0):
             # send phasing filler
-            # delay 10 ms
-            time.sleep (0.010)
+            # delay 40 ms
+            time.sleep (0.040)
             key1 = pmt.intern("packet_len")
             val1 = pmt.from_long(self.c_len)
             self.add_item_tag(0, # Write to output port 0

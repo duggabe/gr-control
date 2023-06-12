@@ -8,42 +8,30 @@
 # Title: xmt_rcv_switch_Pluto
 # Author: Barry Duggan
 # Description: Pluto Station control module
-# GNU Radio version: 3.10.1.1
+# GNU Radio version: 3.10.6.0
 
 from packaging.version import Version as StrictVersion
-
-if __name__ == '__main__':
-    import ctypes
-    import sys
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary('libX11.so')
-            x11.XInitThreads()
-        except:
-            print("Warning: failed to XInitThreads()")
-
 from PyQt5 import Qt
+from gnuradio import qtgui
 from PyQt5.QtCore import QObject, pyqtSlot
-from gnuradio import eng_notation
 from gnuradio import blocks
+from gnuradio import eng_notation
 from gnuradio import filter
 from gnuradio.filter import firdes
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
+from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import iio
-from gnuradio import qtgui
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 import xmt_rcv_switch_Pluto_epy_block_0 as epy_block_0  # embedded python block
 
 
-
-from gnuradio import qtgui
 
 class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
 
@@ -54,8 +42,8 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -75,25 +63,26 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(self.settings.value("geometry").toByteArray())
             else:
                 self.restoreGeometry(self.settings.value("geometry"))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
         ##################################################
         # Variables
         ##################################################
         self.offset = offset = 0
-        self.freq = freq = 144.92e6
+        self.freq = freq = 432.2e6
         self.tx_freq = tx_freq = freq+offset
         self.variable_qtgui_toggle_button_msg_0 = variable_qtgui_toggle_button_msg_0 = 0
         self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
-        self.tx_atten = tx_atten = 50
+        self.tx_atten = tx_atten = 0
         self.samp_rate = samp_rate = 768000
         self.gain = gain = 50
 
         ##################################################
         # Blocks
         ##################################################
-        self._tx_atten_range = Range(0, 89, 1, 50, 200)
+
+        self._tx_atten_range = Range(0, 89, 1, 0, 200)
         self._tx_atten_win = RangeWidget(self._tx_atten_range, self.set_tx_atten, "Tx Attenuation", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._tx_atten_win, 2, 0, 1, 3)
         for r in range(2, 3):
@@ -118,19 +107,14 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
-        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://192.168.1.137:49204', 100, False)
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
-        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://192.168.1.194:49202', 100, True)
-        if int == bool:
-        	self._variable_qtgui_toggle_button_msg_0_choices = {'Pressed': bool(1), 'Released': bool(0)}
-        elif int == str:
-        	self._variable_qtgui_toggle_button_msg_0_choices = {'Pressed': "1".replace("'",""), 'Released': "0".replace("'","")}
-        else:
-        	self._variable_qtgui_toggle_button_msg_0_choices = {'Pressed': 1, 'Released': 0}
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, (-1), '', False)
+        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://127.0.0.1:49204', 100, False)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, (-1), '', True, True)
+        self.zeromq_pub_msg_sink_0 = zeromq.pub_msg_sink('tcp://127.0.0.1:49202', 100, True)
+        self._variable_qtgui_toggle_button_msg_0_choices = {'Pressed': 1, 'Released': 0}
 
-        _variable_qtgui_toggle_button_msg_0_toggle_button = qtgui.ToggleButton(self.set_variable_qtgui_toggle_button_msg_0, 'Transmit', self._variable_qtgui_toggle_button_msg_0_choices, False,"'value'".replace("'",""))
-        _variable_qtgui_toggle_button_msg_0_toggle_button.setColors("white","default","red","default")
+        _variable_qtgui_toggle_button_msg_0_toggle_button = qtgui.ToggleButton(self.set_variable_qtgui_toggle_button_msg_0, 'Transmit', self._variable_qtgui_toggle_button_msg_0_choices, False, 'value')
+        _variable_qtgui_toggle_button_msg_0_toggle_button.setColors("white", "default", "red", "default")
         self.variable_qtgui_toggle_button_msg_0 = _variable_qtgui_toggle_button_msg_0_toggle_button
 
         self.top_grid_layout.addWidget(_variable_qtgui_toggle_button_msg_0_toggle_button, 3, 2, 1, 1)
@@ -295,7 +279,7 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
 
     def set_tx_atten(self, tx_atten):
         self.tx_atten = tx_atten
-        self.iio_pluto_sink_0.set_attenuation(self.tx_atten)
+        self.iio_pluto_sink_0.set_attenuation(0,self.tx_atten)
 
     def get_samp_rate(self):
         return self.samp_rate

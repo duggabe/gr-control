@@ -296,7 +296,7 @@ blocks:
       \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,93]\n        self.c_len\
       \ = len (self.char_list)\n        # print (self.c_len)\n\n    def work(self,\
       \ input_items, output_items):\n        if (self.state == 0):\n            #\
-      \ send phasing filler\n            # delay 10 ms\n            time.sleep (0.010)\n\
+      \ send phasing filler\n            # delay 40 ms\n            time.sleep (0.040)\n\
       \            key1 = pmt.intern(\"packet_len\")\n            val1 = pmt.from_long(self.c_len)\n\
       \            self.add_item_tag(0, # Write to output port 0\n               \
       \ self.indx,   # Index of the tag\n                key1,   # Key of the tag\n\
