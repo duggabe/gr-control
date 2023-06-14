@@ -80,14 +80,14 @@ blocks:
     label2: '"+600kHz"'
     label3: ''
     label4: ''
-    labels: '["-600kHz", "0", "+600kHz"]'
+    labels: '["-5MHz", "-600kHz", "0", "+600kHz", "+5MHz"]'
     num_opts: '0'
     option0: '-600000'
     option1: '0'
     option2: '600000'
     option3: '3'
     option4: '4'
-    options: '[-600000, 0, 600000]'
+    options: '[-5000000, -600000, 0, 600000, 5000000]'
     orient: Qt.QVBoxLayout
     type: int
     value: '0'
@@ -96,7 +96,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 12.0]
+    coordinate: [576, 12.0]
     rotation: 0
     state: true
 - name: samp_rate

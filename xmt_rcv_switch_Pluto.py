@@ -159,9 +159,9 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         # Create the options list
-        self._offset_options = [-600000, 0, 600000]
+        self._offset_options = [-5000000, -600000, 0, 600000, 5000000]
         # Create the labels list
-        self._offset_labels = ['-600kHz', '0', '+600kHz']
+        self._offset_labels = ['-5MHz', '-600kHz', '0', '+600kHz', '+5MHz']
         # Create the combo box
         self._offset_tool_bar = Qt.QToolBar(self)
         self._offset_tool_bar.addWidget(Qt.QLabel("Offset" + ": "))
@@ -241,8 +241,8 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
 
     def set_offset(self, offset):
         self.offset = offset
-        self._offset_callback(self.offset)
         self.set_tx_freq(self.freq+self.offset)
+        self._offset_callback(self.offset)
 
     def get_freq(self):
         return self.freq

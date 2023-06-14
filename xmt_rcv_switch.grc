@@ -52,12 +52,12 @@ blocks:
     gui_hint: 9,0,1,1
     label: Receive Freq
     type: real
-    value: 432.2e6
+    value: '432193500'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 12.0]
+    coordinate: [816, 12.0]
     rotation: 0
     state: true
 - name: gain
@@ -72,7 +72,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '76'
-    value: '50'
+    value: '76'
     widget: slider
   states:
     bus_sink: false
@@ -92,14 +92,14 @@ blocks:
     label2: '"+600kHz"'
     label3: ''
     label4: ''
-    labels: '["-600kHz", "0", "+600kHz"]'
+    labels: '["-5MHz", "-600kHz", "0", "+600kHz", "+5MHz"]'
     num_opts: '0'
     option0: '-600000'
     option1: '0'
     option2: '600000'
     option3: '3'
     option4: '4'
-    options: '[-600000, 0, 600000]'
+    options: '[-5000000, -600000, 0, 600000, 5000000]'
     orient: Qt.QVBoxLayout
     type: int
     value: '0'
@@ -1031,7 +1031,7 @@ blocks:
     dc_offs_enb8: default
     dc_offs_enb9: default
     dev_addr: ''
-    dev_args: '"recv_buff_size=12288,recv_frame_size=1536"'
+    dev_args: '"recv_buff_size=12288,recv_frame_size=1544"'
     gain0: gain
     gain1: '0'
     gain10: '0'
@@ -1288,7 +1288,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [248, 116.0]
+    coordinate: [256, 100.0]
     rotation: 0
     state: enabled
 - name: zeromq_pub_msg_sink_0
@@ -1306,7 +1306,7 @@ blocks:
     bus_structure: null
     coordinate: [784, 292.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: zeromq_pub_sink_0
   id: zeromq_pub_sink
   parameters:
@@ -1332,7 +1332,7 @@ blocks:
 - name: zeromq_sub_msg_source_0
   id: zeromq_sub_msg_source
   parameters:
-    address: tcp://127.0.0.1:49204
+    address: tcp://192.168.1.137:49204
     affinity: ''
     alias: ''
     bind: 'False'
@@ -1346,7 +1346,7 @@ blocks:
     bus_structure: null
     coordinate: [40, 268.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: zeromq_sub_source_0
   id: zeromq_sub_source
   parameters:
@@ -1395,4 +1395,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.6.0
+  grc_version: v3.11.0.0git-482-g60d9d6b8

@@ -305,7 +305,6 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.blocks_uchar_to_float_0_0 = blocks.uchar_to_float()
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_repack_bits_bb_1_0 = blocks.repack_bits_bb(1, 8, "packet_len", False, gr.GR_MSB_FIRST)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(1.0)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, './output.tmp', False)
         self.blocks_file_sink_0.set_unbuffered(True)
         self.analog_agc_xx_0 = analog.agc_cc((1e-4), 1.0, 1.0)
@@ -315,11 +314,9 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_agc_xx_0, 0), (self.digital_symbol_sync_xx_0, 0))
-        self.connect((self.analog_agc_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.digital_fll_band_edge_cc_0, 0))
+        self.connect((self.analog_agc_xx_0, 0), (self.digital_fll_band_edge_cc_0, 0))
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.digital_crc32_bb_0_0, 0))
-        self.connect((self.blocks_throttle2_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.analog_agc_xx_0, 0))
         self.connect((self.blocks_uchar_to_float_0_0, 0), (self.qtgui_time_sink_x_0_2, 0))
         self.connect((self.blocks_uchar_to_float_0_0_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
@@ -329,7 +326,8 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_crc32_bb_0_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
-        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.analog_agc_xx_0, 0))
+        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.digital_symbol_sync_xx_0, 0))
+        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.blocks_uchar_to_float_0_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_costas_loop_cc_0, 0))

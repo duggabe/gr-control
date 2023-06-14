@@ -153,7 +153,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1024, 108.0]
+    coordinate: [624, 156.0]
     rotation: 0
     state: true
 - name: blocks_file_sink_0
@@ -174,24 +174,6 @@ blocks:
     coordinate: [1200, 524.0]
     rotation: 0
     state: true
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: '1.0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [616, 180.0]
-    rotation: 0
-    state: enabled
 - name: blocks_repack_bits_bb_1_0
   id: blocks_repack_bits_bb
   parameters:
@@ -584,7 +566,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 116.0]
+    coordinate: [1080, 148.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_0
@@ -811,7 +793,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 212.0]
+    coordinate: [1080, 92.0]
     rotation: 0
     state: true
 - name: virtual_sink_0_0
@@ -878,11 +860,9 @@ blocks:
     state: true
 
 connections:
-- [analog_agc_xx_0, '0', qtgui_freq_sink_x_0, '0']
-- [analog_agc_xx_0, '0', virtual_sink_0, '0']
-- [blocks_multiply_const_vxx_0, '0', digital_fll_band_edge_cc_0, '0']
+- [analog_agc_xx_0, '0', digital_fll_band_edge_cc_0, '0']
 - [blocks_repack_bits_bb_1_0, '0', digital_crc32_bb_0_0, '0']
-- [blocks_throttle2_0, '0', blocks_multiply_const_vxx_0, '0']
+- [blocks_throttle2_0, '0', analog_agc_xx_0, '0']
 - [blocks_uchar_to_float_0_0, '0', qtgui_time_sink_x_0_2, '0']
 - [blocks_uchar_to_float_0_0_0, '0', qtgui_time_sink_x_0_0, '0']
 - [digital_constellation_decoder_cb_0, '0', digital_diff_decoder_bb_0, '0']
@@ -892,7 +872,8 @@ connections:
 - [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_0, '0']
 - [digital_crc32_bb_0_0, '0', blocks_file_sink_0, '0']
 - [digital_diff_decoder_bb_0, '0', virtual_sink_0_0, '0']
-- [digital_fll_band_edge_cc_0, '0', analog_agc_xx_0, '0']
+- [digital_fll_band_edge_cc_0, '0', qtgui_freq_sink_x_0, '0']
+- [digital_fll_band_edge_cc_0, '0', virtual_sink_0, '0']
 - [digital_map_bb_0, '0', blocks_uchar_to_float_0_0, '0']
 - [digital_map_bb_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_costas_loop_cc_0, '0']
