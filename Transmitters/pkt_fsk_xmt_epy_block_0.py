@@ -56,7 +56,7 @@ class blk(gr.sync_block):
                 output_items[0][i] = self.char_list[i]
                 i += 1
             self.pre_count += 1
-            if (self.pre_count > 99):
+            if (self.pre_count > 3):
                 self.state = 1
             return (self.c_len)
         elif (self.state == 1):
@@ -129,8 +129,14 @@ class blk(gr.sync_block):
                 output_items[0][i] = self.char_list[i]
                 i += 1
             self.pre_count += 1
-            if (self.pre_count > 39):
+            if (self.pre_count > 9):
                 self.state = 4
             return (self.c_len)
+        elif (self.state == 4):
+            # delay 10 sec
+            time.sleep (10.0)
+            print ("End of transmission")
+            self.state = 5
+            return (0)
         return (0)
 

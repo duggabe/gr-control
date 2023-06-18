@@ -15,9 +15,8 @@ from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio import blocks
 from gnuradio import digital
-from gnuradio import filter
-from gnuradio.filter import firdes
 from gnuradio import gr
+from gnuradio.filter import firdes
 from gnuradio.fft import window
 import sys
 import signal
@@ -80,7 +79,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.vco_max = vco_max = center+fsk_deviation
         self.vco_offset = vco_offset = space/vco_max
         self.samp_rate = samp_rate = 48000
-        self.baud = baud = 120
+        self.baud = baud = 1200
         self.access_key = access_key = '11100001010110101110100010010011'
         self.thresh = thresh = 1
         self.repeat = repeat = (int)(samp_rate/baud)
@@ -93,7 +92,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
 
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49600', 100, False, (-1), '', True, True)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
-            32768, #size
+            2048, #size
             samp_rate, #samp_rate
             'Transmit data', #name
             1, #number of inputs
@@ -105,11 +104,11 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
 
         self.qtgui_time_sink_x_0.enable_tags(True)
-        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.1, 0.0, 0, "packet_len")
+        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_NORM, qtgui.TRIG_SLOPE_POS, 0.1, 0.0, 0, "packet_len")
         self.qtgui_time_sink_x_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0.enable_grid(False)
         self.qtgui_time_sink_x_0.enable_axis_labels(True)
-        self.qtgui_time_sink_x_0.enable_control_panel(True)
+        self.qtgui_time_sink_x_0.enable_control_panel(False)
         self.qtgui_time_sink_x_0.enable_stem_plot(False)
 
 
@@ -144,21 +143,12 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.low_pass_filter_0 = filter.fir_filter_fff(
-            1,
-            firdes.low_pass(
-                1,
-                samp_rate,
-                vco_max,
-                1000,
-                window.WIN_HAMMING,
-                6.76))
-        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=1020)
+        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=75)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, "packet_len")
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.blocks_vco_c_0 = blocks.vco_c(samp_rate, (2*math.pi*vco_max), 1.0)
         self.blocks_uchar_to_float_0 = blocks.uchar_to_float()
-        self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_char*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_char*1, repeat)
         self.blocks_repack_bits_bb_1_0 = blocks.repack_bits_bb(8, 1, '', False, gr.GR_MSB_FIRST)
@@ -174,15 +164,14 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_uchar_to_float_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_repack_bits_bb_1_0, 0))
-        self.connect((self.blocks_throttle2_0_0, 0), (self.digital_crc32_bb_0, 0))
-        self.connect((self.blocks_uchar_to_float_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.zeromq_pub_sink_0, 0))
+        self.connect((self.blocks_uchar_to_float_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.blocks_uchar_to_float_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.blocks_vco_c_0, 0), (self.zeromq_pub_sink_0, 0))
+        self.connect((self.blocks_vco_c_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.blocks_tagged_stream_mux_0, 1))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_protocol_formatter_bb_0, 0))
         self.connect((self.digital_protocol_formatter_bb_0, 0), (self.blocks_tagged_stream_mux_0, 0))
-        self.connect((self.epy_block_0, 0), (self.blocks_throttle2_0_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.epy_block_0, 0), (self.digital_crc32_bb_0, 0))
 
 
     def closeEvent(self, event):
@@ -239,7 +228,6 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.vco_max = vco_max
         self.set_inp_amp((self.mark/self.vco_max)-self.vco_offset)
         self.set_vco_offset(self.space/self.vco_max)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, self.vco_max, 1000, window.WIN_HAMMING, 6.76))
 
     def get_vco_offset(self):
         return self.vco_offset
@@ -255,8 +243,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.set_repeat((int)(self.samp_rate/self.baud))
-        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, self.vco_max, 1000, window.WIN_HAMMING, 6.76))
+        self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
 
     def get_baud(self):

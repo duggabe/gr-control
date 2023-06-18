@@ -29,6 +29,8 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import zeromq
+from gnuradio.qtgui import Range, RangeWidget
+from PyQt5 import QtCore
 import sip
 
 
@@ -70,15 +72,16 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.samp_rate = samp_rate = 48000
-        self.baud = baud = 120
+        self.baud = baud = 1200
         self.space = space = 2200
         self.repeat = repeat = (int)(samp_rate/baud)
         self.mark = mark = 1200
-        self.decim = decim = 10
+        self.decim = decim = 2
         self.access_key = access_key = '11100001010110101110100010010011'
         self.thresh = thresh = 1
+        self.sq_lvl = sq_lvl = -50
         self.sps = sps = (int)(repeat/decim)
-        self.reverse = reverse = 1
+        self.reverse = reverse = (-1)
         self.phase_bw = phase_bw = math.pi/32
         self.hdr_format = hdr_format = digital.header_format_default(access_key, 0)
         self.fsk_deviation = fsk_deviation = (abs)(mark-space)
@@ -88,6 +91,13 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
+        self._sq_lvl_range = Range(-100, 0, 5, -50, 200)
+        self._sq_lvl_win = RangeWidget(self._sq_lvl_range, self.set_sq_lvl, "Squelch", "counter", float, QtCore.Qt.Horizontal)
+        self.top_grid_layout.addWidget(self._sq_lvl_win, 0, 1, 1, 1)
+        for r in range(0, 1):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(1, 2):
+            self.top_grid_layout.setColumnStretch(c, 1)
         # Create the options list
         self._reverse_options = [1, -1]
         # Create the labels list
@@ -183,7 +193,7 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0_0.set_y_label('Amplitude', "")
 
         self.qtgui_time_sink_x_0_0.enable_tags(True)
-        self.qtgui_time_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.1, 0.0, 0, "packet_len")
+        self.qtgui_time_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.1, 0.0, 0, "packet_len")
         self.qtgui_time_sink_x_0_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0_0.enable_grid(False)
         self.qtgui_time_sink_x_0_0.enable_axis_labels(True)
@@ -246,6 +256,7 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(reverse)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, './output.tmp', False)
         self.blocks_file_sink_0.set_unbuffered(True)
+        self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf((samp_rate/(2*math.pi*fsk_deviation)))
         self.analog_agc_xx_0 = analog.agc_ff((1e-4), 1.0, 1.0)
         self.analog_agc_xx_0.set_max_gain(2.0)
@@ -256,6 +267,7 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_agc_xx_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.analog_simple_squelch_cc_0, 0), (self.analog_quadrature_demod_cf_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.analog_agc_xx_0, 0))
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.digital_crc32_bb_0_0, 0))
         self.connect((self.blocks_throttle2_0_0, 0), (self.blocks_file_sink_0, 0))
@@ -267,7 +279,7 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_uchar_to_float_0_0_0, 0))
         self.connect((self.digital_crc32_bb_0_0, 0), (self.blocks_throttle2_0_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_binary_slicer_fb_0, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.analog_quadrature_demod_cf_0, 0))
+        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.analog_simple_squelch_cc_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
 
 
@@ -340,6 +352,13 @@ class pkt_fsk_rcv(gr.top_block, Qt.QWidget):
 
     def set_thresh(self, thresh):
         self.thresh = thresh
+
+    def get_sq_lvl(self):
+        return self.sq_lvl
+
+    def set_sq_lvl(self, sq_lvl):
+        self.sq_lvl = sq_lvl
+        self.analog_simple_squelch_cc_0.set_threshold(self.sq_lvl)
 
     def get_sps(self):
         return self.sps
