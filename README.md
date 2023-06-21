@@ -50,7 +50,7 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. To use the NFM and SSB transmitters in this main branch, you must install gr-cessb as follows:  
+5. To use the SSB transmitter in this main branch, you must install gr-cessb as follows:  
 
     cd  
     git clone https://github.com/drmpeg/gr-cessb.git  
@@ -96,7 +96,7 @@ gnuradio-companion
 3. Open the `xmt_rcv_switch` flowgraph.
 4. Change the IP address of the ZMQ SUB Message Source block to the IP of the Raspberry Pi.
 5. Change the IP address of the ZMQ PUB Message Sink to the IP of the computer where `xmt_rcv_switch.py` will run (your local computer).
-6. Click 'Run' and 'Execute' or press F6.
+6. Click 'Execute the flowgraph' or press F6.
 7. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Tx gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
   * mute receiver
   * turn off rcv LED
@@ -170,7 +170,7 @@ cd ~/gr-control/Transmitters
 
 ### File Transfer using Packets
 
-For documentation on the Packet modules, refer to [File transfer using Packet and BPSK](https://wiki.gnuradio.org/index.php?title=File_transfer_using_Packet_and_BPSK).
+For documentation on the Packet modules, refer to [File transfer using Packet and BPSK](https://wiki.gnuradio.org/index.php?title=File_transfer_using_Packet_and_BPSK) and [File transfer using Packet and AFSK](https://wiki.gnuradio.org/index.php?title=Simulation_example:_FSK#File_transfer_using_Packet_and_AFSK).
 
 <a name="loopback"/>
 

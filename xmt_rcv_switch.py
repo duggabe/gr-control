@@ -71,13 +71,13 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.offset = offset = 0
-        self.freq = freq = 432.2e6
+        self.freq = freq = 432193500
         self.tx_freq = tx_freq = freq+offset
         self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
         self.tx_gain = tx_gain = 0.5
         self.state = state = 0
         self.samp_rate = samp_rate = 768000
-        self.gain = gain = 50
+        self.gain = gain = 76
         self.burst_key = burst_key = 0
 
         ##################################################
@@ -91,7 +91,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._gain_range = Range(0, 76, 1, 50, 200)
+        self._gain_range = Range(0, 76, 1, 76, 200)
         self._gain_win = RangeWidget(self._gain_range, self.set_gain, "Rcv Gain", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._gain_win, 1, 0, 1, 3)
         for r in range(1, 2):
@@ -129,7 +129,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(('', "recv_buff_size=12288,recv_frame_size=1536", "master_clock_rate=30.72e6")),
+            ",".join(('', "recv_buff_size=12288,recv_frame_size=1544", "master_clock_rate=30.72e6")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -192,9 +192,9 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         # Create the options list
-        self._offset_options = [-600000, 0, 600000]
+        self._offset_options = [-5000000, -600000, 0, 600000, 5000000]
         # Create the labels list
-        self._offset_labels = ['-600kHz', '0', '+600kHz']
+        self._offset_labels = ['-5MHz', '-600kHz', '0', '+600kHz', '+5MHz']
         # Create the combo box
         self._offset_tool_bar = Qt.QToolBar(self)
         self._offset_tool_bar.addWidget(Qt.QLabel("Offset" + ": "))

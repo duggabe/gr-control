@@ -8,42 +8,30 @@
 # Title: NFM_rcv
 # Author: Barry Duggan
 # Description: NB FM receiver
-# GNU Radio version: 3.10.1.1
+# GNU Radio version: 3.10.6.0
 
 from packaging.version import Version as StrictVersion
-
-if __name__ == '__main__':
-    import ctypes
-    import sys
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary('libX11.so')
-            x11.XInitThreads()
-        except:
-            print("Warning: failed to XInitThreads()")
-
 from PyQt5 import Qt
 from gnuradio import qtgui
-from gnuradio.filter import firdes
-import sip
 from gnuradio import analog
 from gnuradio import audio
 from gnuradio import blocks
 from gnuradio import filter
+from gnuradio.filter import firdes
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
+from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+import sip
 
 
-
-from gnuradio import qtgui
 
 class NFM_rcv(gr.top_block, Qt.QWidget):
 
@@ -54,8 +42,8 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -75,8 +63,8 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(self.settings.value("geometry").toByteArray())
             else:
                 self.restoreGeometry(self.settings.value("geometry"))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
         ##################################################
         # Variables
@@ -91,13 +79,14 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
+
         self._volume_range = Range(0, 1.00, 0.05, 0.05, 200)
         self._volume_win = RangeWidget(self._volume_range, self.set_volume, "Volume", "slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._volume_win)
         self._sq_lvl_range = Range(-100, 0, 5, -50, 200)
         self._sq_lvl_win = RangeWidget(self._sq_lvl_range, self.set_sq_lvl, "Squelch", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._sq_lvl_win)
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, -1, '')
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49201', 100, False, (-1), '', False)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
             1024, #size
             window.WIN_BLACKMAN_hARRIS, #wintype
@@ -133,7 +122,7 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.qwidget(), Qt.QWidget)
 
         self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
-        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, ((samp_rate/48000)*rs_ratio))
+        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, (((samp_rate/48000)*rs_ratio)))
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(1, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
@@ -151,8 +140,8 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
         self.analog_nbfm_rx_0 = analog.nbfm_rx(
         	audio_rate=48000,
-        	quad_rate=(int)(samp_rate/rf_decim),
-        	tau=75e-6,
+        	quad_rate=((int)(samp_rate/rf_decim)),
+        	tau=(75e-6),
         	max_dev=5e3,
           )
 
@@ -185,7 +174,7 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_channel_filter(firdes.complex_band_pass(1.0, self.samp_rate, -3000, 3000, 200, window.WIN_HAMMING, 6.76))
         self.set_rf_decim((int)(self.samp_rate/48000))
-        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
+        self.mmse_resampler_xx_0.set_resamp_ratio((((self.samp_rate/48000)*self.rs_ratio)))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
 
     def get_volume(self):
@@ -207,7 +196,7 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
 
     def set_rs_ratio(self, rs_ratio):
         self.rs_ratio = rs_ratio
-        self.mmse_resampler_xx_0.set_resamp_ratio(((self.samp_rate/48000)*self.rs_ratio))
+        self.mmse_resampler_xx_0.set_resamp_ratio((((self.samp_rate/48000)*self.rs_ratio)))
 
     def get_rf_decim(self):
         return self.rf_decim

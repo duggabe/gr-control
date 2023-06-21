@@ -1332,7 +1332,7 @@ blocks:
 - name: zeromq_sub_msg_source_0
   id: zeromq_sub_msg_source
   parameters:
-    address: tcp://192.168.1.137:49204
+    address: tcp://127.0.0.1:49204
     affinity: ''
     alias: ''
     bind: 'False'
@@ -1395,4 +1395,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.11.0.0git-482-g60d9d6b8
+  grc_version: 3.10.6.0

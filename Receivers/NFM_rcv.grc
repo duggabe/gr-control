@@ -43,6 +43,7 @@ blocks:
     low_cutoff_freq: '-3000'
     samp_rate: samp_rate
     type: complex_band_pass
+    value: ''
     width: '200'
     win: window.WIN_HAMMING
   states:
@@ -357,6 +358,7 @@ blocks:
     address: tcp://127.0.0.1:49201
     affinity: ''
     alias: ''
+    bind: 'False'
     comment: USRP sample rate = 768kHz
     hwm: '-1'
     key: ''
@@ -370,7 +372,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 196.0]
+    coordinate: [24, 188.0]
     rotation: 0
     state: true
 
@@ -387,3 +389,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.6.0
