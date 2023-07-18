@@ -56,22 +56,6 @@ while True:
         if (buff[0] == 37):     # '%'
             if (buff == b'%UUU'):
                 print ("End of text")
-                buff = f_in.read(4)     # skip next four 'U's
-                rcv_fn = []
-                i = 0
-                while (i < 44):
-                    ch = f_in.read(1)
-                    if (ch == b'%'):
-                        break
-                    rcv_fn.append((ord)(ch))
-                    i += 1
-                rf_len = len (rcv_fn)
-                x = 0
-                while (x < rf_len):
-                    rcv_fn[x] = str((chr)(rcv_fn[x]))
-                    x += 1
-                ofn = "".join(rcv_fn)
-                print ("Transmitted file name:",ofn)
                 state = 2
                 break
         else:

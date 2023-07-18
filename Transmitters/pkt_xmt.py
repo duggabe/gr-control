@@ -72,10 +72,12 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.samp_rate = samp_rate = 48000
         self.access_key = access_key = '11100001010110101110100010010011'
         self.usrp_rate = usrp_rate = 768000
         self.sps = sps = 4
-        self.samp_rate = samp_rate = 48000
+        self.rs_ratio = rs_ratio = 1.040
+        self.low_pass_filter_taps = low_pass_filter_taps = firdes.low_pass(1.0, samp_rate, 20000,2000, window.WIN_HAMMING, 6.76)
         self.hdr_format = hdr_format = digital.header_format_default(access_key, 0)
         self.excess_bw = excess_bw = 0.35
         self.bpsk = bpsk = digital.constellation_bpsk().base()
@@ -85,11 +87,6 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         ##################################################
 
         self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, (-1), '', True, True)
-        self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
-                interpolation=((int)(usrp_rate/samp_rate)),
-                decimation=1,
-                taps=[],
-                fractional_bw=0)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             256, #size
             samp_rate, #samp_rate
@@ -142,7 +139,10 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=1020)
+        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, (1.0/((usrp_rate/samp_rate)*rs_ratio)))
+        self.fft_filter_xxx_0_0_0 = filter.fft_filter_ccc(1, low_pass_filter_taps, 1)
+        self.fft_filter_xxx_0_0_0.declare_sample_delay(0)
+        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=384)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, "packet_len")
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_constellation_modulator_0 = digital.generic_mod(
@@ -168,12 +168,13 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.blocks_throttle2_0_0, 0), (self.digital_crc32_bb_0, 0))
         self.connect((self.blocks_uchar_to_float_0_0_0_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.digital_constellation_modulator_0, 0), (self.rational_resampler_xxx_0, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.fft_filter_xxx_0_0_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.blocks_tagged_stream_mux_0, 1))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_protocol_formatter_bb_0, 0))
         self.connect((self.digital_protocol_formatter_bb_0, 0), (self.blocks_tagged_stream_mux_0, 0))
         self.connect((self.epy_block_0, 0), (self.blocks_throttle2_0_0, 0))
-        self.connect((self.rational_resampler_xxx_0, 0), (self.zeromq_pub_sink_0, 0))
+        self.connect((self.fft_filter_xxx_0_0_0, 0), (self.mmse_resampler_xx_0, 0))
+        self.connect((self.mmse_resampler_xx_0, 0), (self.zeromq_pub_sink_0, 0))
 
 
     def closeEvent(self, event):
@@ -191,6 +192,16 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.InFile = InFile
         self.epy_block_0.FileName = self.InFile
 
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.set_low_pass_filter_taps(firdes.low_pass(1.0, self.samp_rate, 20000, 2000, window.WIN_HAMMING, 6.76))
+        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
+        self.mmse_resampler_xx_0.set_resamp_ratio((1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
+        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+
     def get_access_key(self):
         return self.access_key
 
@@ -203,6 +214,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
 
     def set_usrp_rate(self, usrp_rate):
         self.usrp_rate = usrp_rate
+        self.mmse_resampler_xx_0.set_resamp_ratio((1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_sps(self):
         return self.sps
@@ -210,13 +222,19 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
     def set_sps(self, sps):
         self.sps = sps
 
-    def get_samp_rate(self):
-        return self.samp_rate
+    def get_rs_ratio(self):
+        return self.rs_ratio
 
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+    def set_rs_ratio(self, rs_ratio):
+        self.rs_ratio = rs_ratio
+        self.mmse_resampler_xx_0.set_resamp_ratio((1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
+
+    def get_low_pass_filter_taps(self):
+        return self.low_pass_filter_taps
+
+    def set_low_pass_filter_taps(self, low_pass_filter_taps):
+        self.low_pass_filter_taps = low_pass_filter_taps
+        self.fft_filter_xxx_0_0_0.set_taps(self.low_pass_filter_taps)
 
     def get_hdr_format(self):
         return self.hdr_format
