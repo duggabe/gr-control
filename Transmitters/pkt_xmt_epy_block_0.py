@@ -15,10 +15,8 @@ State definitions
     0   idle
     1   send preamble
     2   send file data
-    3   send post filler
-    4   preamble delay
-    5   message delay
-    6   post filler delay
+    3   send file name
+    4   send post filler
 """
 
 class blk(gr.sync_block):
@@ -30,10 +28,8 @@ class blk(gr.sync_block):
             out_sig=[np.uint8])
         self.FileName = FileName
         self.Pkt_len = Pkt_len
-        self.max_ticks = 0
         self.state = 0      # idle state
         self.pre_count = 0
-        self.tick_ctr = 0
         self.indx = 0
         self._debug = 0     # debug
         self.data = ""
@@ -78,13 +74,10 @@ class blk(gr.sync_block):
             while (i < self.c_len):
                 output_items[0][i] = self.char_list[i]
                 i += 1
-            self.tick_ctr = 0
             self.pre_count += 1
-            if (self.pre_count > 100):
+            if (self.pre_count > 64):
                 self.pre_count = 0
                 self.state = 2      # send msg
-            else:
-                self.state = 4      # delay between packets
             return (self.c_len)
 
         elif (self.state == 2):
@@ -95,8 +88,7 @@ class blk(gr.sync_block):
                     print ('End of file')
                     self._eof = True
                     self.f_in.close()
-                    self.state = 3      # sent post filler
-                    self.tick_ctr = 0
+                    self.state = 3      # send file name
                     self.pre_count = 0
                     break
                 # convert to Base64
@@ -116,14 +108,35 @@ class blk(gr.sync_block):
                 while (i < e_len):
                     output_items[0][i] = encoded[i]
                     i += 1
-                self.tick_ctr = 0
-                self.state = 5      # delay between packets
                 return (e_len)
 
         elif (self.state == 3):
+            # send file name
+            fn_len = len (self.FileName)
+            key1 = pmt.intern("packet_len")
+            val1 = pmt.from_long(fn_len+8)
+            self.add_item_tag(0, # Write to output port 0
+                self.indx,   # Index of the tag
+                key1,   # Key of the tag
+                val1    # Value of the tag
+                )
+            self.indx += (fn_len+8)
+            i = 0
+            while (i < 8):
+                output_items[0][i] = self.filler[i]
+                i += 1
+            j = 0
+            while (i < (fn_len+8)):
+                output_items[0][i] = ord(self.FileName[j])
+                i += 1
+                j += 1
+            self.state = 4
+            return (fn_len+8)
+
+        elif (self.state == 4):
             # send post filler
             if (self._debug):
-                print ("state = 3", self.pre_count)
+                print ("state = 4", self.pre_count)
             key1 = pmt.intern("packet_len")
             val1 = pmt.from_long(self.f_len)
             self.add_item_tag(0, # Write to output port 0
@@ -136,48 +149,11 @@ class blk(gr.sync_block):
             while (i < self.f_len):
                 output_items[0][i] = self.filler[i]
                 i += 1
-            self.tick_ctr = 0
             self.pre_count += 1
-            if (self.pre_count > 4):
+            if (self.pre_count > 16):
                 self.pre_count = 0
                 self.state = 0      # idle
-            else:
-                self.state = 6      # delay between packets
             return (self.f_len)
-
-        elif (self.state == 4):
-            if (self._debug):
-                print ("state = 4", self.tick_ctr)
-            # delay 20 ms
-            time.sleep (0.020)
-            self.tick_ctr += 1
-            if (self.tick_ctr > self.max_ticks):
-                self.tick_ctr = 0
-                self.state = 1      # continue preamble
-            return (0)
-
-        elif (self.state == 5):
-            if (self._debug):
-                print ("state = 5", self.tick_ctr)
-            # delay 20 ms
-            time.sleep (0.020)
-            self.tick_ctr += 1
-            if (self.tick_ctr > self.max_ticks):
-                self.pre_count = 0
-                self.tick_ctr = 0
-                self.state = 2      # continue data
-            return (0)
-
-        elif (self.state == 6):
-            if (self._debug):
-                print ("state = 6", self.tick_ctr)
-            # delay 20 ms
-            time.sleep (0.020)
-            self.tick_ctr += 1
-            if (self.tick_ctr > self.max_ticks):
-                self.tick_ctr = 0
-                self.state = 3      # continue filler
-            return (0)
 
         return (0)
 

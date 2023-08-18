@@ -222,14 +222,14 @@ blocks:
     maximum: '0.1'
     maxoutbuf: '0'
     minoutbuf: '0'
-    samples_per_second: samp_rate
-    type: byte
+    samples_per_second: usrp_rate
+    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 212.0]
+    coordinate: [920, 388.0]
     rotation: 0
     state: true
 - name: blocks_uchar_to_float_0_0_0_0
@@ -308,28 +308,27 @@ blocks:
   id: epy_block
   parameters:
     FileName: InFile
-    Pkt_len: '384'
+    Pkt_len: '60'
     _source_code: "\"\"\"\nEmbedded Python Block: File Source to Tagged Stream\n\"\
       \"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport time\nimport pmt\n\
       import os.path\nimport sys\nimport base64\n\n\"\"\"\nState definitions\n   \
-      \ 0   idle\n    1   send preamble\n    2   send file data\n    3   send post\
-      \ filler\n    4   preamble delay\n    5   message delay\n    6   post filler\
-      \ delay\n\"\"\"\n\nclass blk(gr.sync_block):\n    def __init__(self, FileName='None',\
-      \ Pkt_len=52):\n        gr.sync_block.__init__(\n            self,\n       \
-      \     name='EPB: File Source to Tagged Stream',\n            in_sig=None,\n\
-      \            out_sig=[np.uint8])\n        self.FileName = FileName\n       \
-      \ self.Pkt_len = Pkt_len\n        self.max_ticks = 0\n        self.state = 0\
-      \      # idle state\n        self.pre_count = 0\n        self.tick_ctr = 0\n\
-      \        self.indx = 0\n        self._debug = 0     # debug\n        self.data\
-      \ = \"\"\n\n        if (os.path.exists(self.FileName)):\n            # open\
-      \ input file\n            self.f_in = open (self.FileName, 'rb')\n         \
-      \   self._eof = False\n            if (self._debug):\n                print\
-      \ (\"File name:\", self.FileName)\n            self.state = 1\n        else:\n\
-      \            print(self.FileName, 'does not exist')\n            self._eof =\
-      \ True\n            self.state = 0\n\n        self.char_list = [37,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
-      \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
-      \ 85,85,85,93]\n        self.c_len = len (self.char_list)\n        # print (self.c_len)\n\
-      \        self.filler = [37,85,85,85, 35,69,79,70, 85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
+      \ 0   idle\n    1   send preamble\n    2   send file data\n    3   send file\
+      \ name\n    4   send post filler\n\"\"\"\n\nclass blk(gr.sync_block):\n    def\
+      \ __init__(self, FileName='None', Pkt_len=52):\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='EPB: File Source to Tagged Stream',\n\
+      \            in_sig=None,\n            out_sig=[np.uint8])\n        self.FileName\
+      \ = FileName\n        self.Pkt_len = Pkt_len\n        self.state = 0      #\
+      \ idle state\n        self.pre_count = 0\n        self.indx = 0\n        self._debug\
+      \ = 0     # debug\n        self.data = \"\"\n\n        if (os.path.exists(self.FileName)):\n\
+      \            # open input file\n            self.f_in = open (self.FileName,\
+      \ 'rb')\n            self._eof = False\n            if (self._debug):\n    \
+      \            print (\"File name:\", self.FileName)\n            self.state =\
+      \ 1\n        else:\n            print(self.FileName, 'does not exist')\n   \
+      \         self._eof = True\n            self.state = 0\n\n        self.char_list\
+      \ = [37,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
+      \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,93]\n        self.c_len\
+      \ = len (self.char_list)\n        # print (self.c_len)\n        self.filler\
+      \ = [37,85,85,85, 35,69,79,70, 85,85,85,85,85,85,85,85, 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,\
       \ 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85, 85,85,85,93]\n        self.f_len\
       \ = len (self.filler)\n\n    def work(self, input_items, output_items):\n\n\
       \        if (self.state == 0):\n            # idle\n            return (0)\n\
@@ -341,17 +340,15 @@ blocks:
       \                val1    # Value of the tag\n                )\n           \
       \ self.indx += self.c_len\n            i = 0\n            while (i < self.c_len):\n\
       \                output_items[0][i] = self.char_list[i]\n                i +=\
-      \ 1\n            self.tick_ctr = 0\n            self.pre_count += 1\n      \
-      \      if (self.pre_count > 100):\n                self.pre_count = 0\n    \
-      \            self.state = 2      # send msg\n            else:\n           \
-      \     self.state = 4      # delay between packets\n            return (self.c_len)\n\
-      \n        elif (self.state == 2):\n            while (not (self._eof)):\n  \
-      \              buff = self.f_in.read (self.Pkt_len)\n                b_len =\
-      \ len(buff)\n                if b_len == 0:\n                    print ('End\
-      \ of file')\n                    self._eof = True\n                    self.f_in.close()\n\
-      \                    self.state = 3      # sent post filler\n              \
-      \      self.tick_ctr = 0\n                    self.pre_count = 0\n         \
-      \           break\n                # convert to Base64\n                encoded\
+      \ 1\n            self.pre_count += 1\n            if (self.pre_count > 64):\n\
+      \                self.pre_count = 0\n                self.state = 2      # send\
+      \ msg\n            return (self.c_len)\n\n        elif (self.state == 2):\n\
+      \            while (not (self._eof)):\n                buff = self.f_in.read\
+      \ (self.Pkt_len)\n                b_len = len(buff)\n                if b_len\
+      \ == 0:\n                    print ('End of file')\n                    self._eof\
+      \ = True\n                    self.f_in.close()\n                    self.state\
+      \ = 3      # send file name\n                    self.pre_count = 0\n      \
+      \              break\n                # convert to Base64\n                encoded\
       \ = base64.b64encode (buff)\n                e_len = len(encoded)\n        \
       \        if (self._debug):\n                    print ('b64 length =', e_len)\n\
       \                key0 = pmt.intern(\"packet_len\")\n                val0 = pmt.from_long(e_len)\n\
@@ -360,36 +357,28 @@ blocks:
       \ of the tag\n                    val0    # Value of the tag\n             \
       \       )\n                self.indx += e_len\n                i = 0\n     \
       \           while (i < e_len):\n                    output_items[0][i] = encoded[i]\n\
-      \                    i += 1\n                self.tick_ctr = 0\n           \
-      \     self.state = 5      # delay between packets\n                return (e_len)\n\
-      \n        elif (self.state == 3):\n            # send post filler\n        \
-      \    if (self._debug):\n                print (\"state = 3\", self.pre_count)\n\
+      \                    i += 1\n                return (e_len)\n\n        elif\
+      \ (self.state == 3):\n            # send file name\n            fn_len = len\
+      \ (self.FileName)\n            key1 = pmt.intern(\"packet_len\")\n         \
+      \   val1 = pmt.from_long(fn_len+8)\n            self.add_item_tag(0, # Write\
+      \ to output port 0\n                self.indx,   # Index of the tag\n      \
+      \          key1,   # Key of the tag\n                val1    # Value of the\
+      \ tag\n                )\n            self.indx += (fn_len+8)\n            i\
+      \ = 0\n            while (i < 8):\n                output_items[0][i] = self.filler[i]\n\
+      \                i += 1\n            j = 0\n            while (i < (fn_len+8)):\n\
+      \                output_items[0][i] = ord(self.FileName[j])\n              \
+      \  i += 1\n                j += 1\n            self.state = 4\n            return\
+      \ (fn_len+8)\n\n        elif (self.state == 4):\n            # send post filler\n\
+      \            if (self._debug):\n                print (\"state = 4\", self.pre_count)\n\
       \            key1 = pmt.intern(\"packet_len\")\n            val1 = pmt.from_long(self.f_len)\n\
       \            self.add_item_tag(0, # Write to output port 0\n               \
       \ self.indx,   # Index of the tag\n                key1,   # Key of the tag\n\
       \                val1    # Value of the tag\n                )\n           \
       \ self.indx += self.f_len\n            i = 0\n            while (i < self.f_len):\n\
       \                output_items[0][i] = self.filler[i]\n                i += 1\n\
-      \            self.tick_ctr = 0\n            self.pre_count += 1\n          \
-      \  if (self.pre_count > 4):\n                self.pre_count = 0\n          \
-      \      self.state = 0      # idle\n            else:\n                self.state\
-      \ = 6      # delay between packets\n            return (self.f_len)\n\n    \
-      \    elif (self.state == 4):\n            if (self._debug):\n              \
-      \  print (\"state = 4\", self.tick_ctr)\n            # delay 20 ms\n       \
-      \     time.sleep (0.020)\n            self.tick_ctr += 1\n            if (self.tick_ctr\
-      \ > self.max_ticks):\n                self.tick_ctr = 0\n                self.state\
-      \ = 1      # continue preamble\n            return (0)\n\n        elif (self.state\
-      \ == 5):\n            if (self._debug):\n                print (\"state = 5\"\
-      , self.tick_ctr)\n            # delay 20 ms\n            time.sleep (0.020)\n\
-      \            self.tick_ctr += 1\n            if (self.tick_ctr > self.max_ticks):\n\
-      \                self.pre_count = 0\n                self.tick_ctr = 0\n   \
-      \             self.state = 2      # continue data\n            return (0)\n\n\
-      \        elif (self.state == 6):\n            if (self._debug):\n          \
-      \      print (\"state = 6\", self.tick_ctr)\n            # delay 20 ms\n   \
-      \         time.sleep (0.020)\n            self.tick_ctr += 1\n            if\
-      \ (self.tick_ctr > self.max_ticks):\n                self.tick_ctr = 0\n   \
-      \             self.state = 3      # continue filler\n            return (0)\n\
-      \n        return (0)\n\n"
+      \            self.pre_count += 1\n            if (self.pre_count > 16):\n  \
+      \              self.pre_count = 0\n                self.state = 0      # idle\n\
+      \            return (self.f_len)\n\n        return (0)\n\n"
     affinity: ''
     alias: ''
     comment: 'Filename is specified on the command line, e.g.:
@@ -403,7 +392,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 212.0]
+    coordinate: [144, 212.0]
     rotation: 0
     state: true
 - name: fft_filter_xxx_0_0_0
@@ -586,22 +575,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 364.0]
+    coordinate: [1096, 364.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_repack_bits_bb_0_0, '0', blocks_uchar_to_float_0_0_0_0, '0']
 - [blocks_tagged_stream_mux_0, '0', virtual_sink_0_0, '0']
-- [blocks_throttle2_0_0, '0', digital_crc32_bb_0, '0']
+- [blocks_throttle2_0_0, '0', zeromq_pub_sink_0, '0']
 - [blocks_uchar_to_float_0_0_0_0, '0', qtgui_time_sink_x_0, '0']
 - [digital_constellation_modulator_0, '0', fft_filter_xxx_0_0_0, '0']
 - [digital_crc32_bb_0, '0', blocks_tagged_stream_mux_0, '1']
 - [digital_crc32_bb_0, '0', digital_protocol_formatter_bb_0, '0']
 - [digital_protocol_formatter_bb_0, '0', blocks_tagged_stream_mux_0, '0']
-- [epy_block_0, '0', blocks_throttle2_0_0, '0']
+- [epy_block_0, '0', digital_crc32_bb_0, '0']
 - [fft_filter_xxx_0_0_0, '0', mmse_resampler_xx_0, '0']
-- [mmse_resampler_xx_0, '0', zeromq_pub_sink_0, '0']
+- [mmse_resampler_xx_0, '0', blocks_throttle2_0_0, '0']
 - [virtual_source_0, '0', blocks_repack_bits_bb_0_0, '0']
 - [virtual_source_0, '0', digital_constellation_modulator_0, '0']
 

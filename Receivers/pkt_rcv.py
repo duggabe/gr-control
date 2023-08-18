@@ -133,10 +133,10 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0_2.set_line_alpha(i, alphas[i])
 
         self._qtgui_time_sink_x_0_2_win = sip.wrapinstance(self.qtgui_time_sink_x_0_2.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_2_win, 2, 0, 1, 3)
-        for r in range(2, 3):
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_2_win, 1, 0, 1, 2)
+        for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 3):
+        for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_time_sink_x_0_0 = qtgui.time_sink_f(
             256, #size
@@ -151,7 +151,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0_0.set_y_label('Amplitude', "")
 
         self.qtgui_time_sink_x_0_0.enable_tags(True)
-        self.qtgui_time_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_AUTO, qtgui.TRIG_SLOPE_POS, 0.1, 0.0, 0, "packet_len")
+        self.qtgui_time_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.1, 0.0, 0, "packet_len")
         self.qtgui_time_sink_x_0_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0_0.enable_grid(False)
         self.qtgui_time_sink_x_0_0.enable_axis_labels(True)
@@ -185,10 +185,10 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_time_sink_x_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_0_win, 3, 0, 1, 3)
-        for r in range(3, 4):
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_0_win, 1, 2, 1, 2)
+        for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 3):
+        for c in range(2, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
@@ -231,10 +231,10 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 0, 0, 1, 3)
+        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 0, 0, 1, 2)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 3):
+        for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
@@ -276,10 +276,10 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 1, 0, 1, 3)
-        for r in range(1, 2):
+        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 0, 2, 1, 2)
+        for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 3):
+        for c in range(2, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
             digital.TED_MUELLER_AND_MULLER,

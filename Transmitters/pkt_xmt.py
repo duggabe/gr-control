@@ -142,7 +142,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, (1.0/((usrp_rate/samp_rate)*rs_ratio)))
         self.fft_filter_xxx_0_0_0 = filter.fft_filter_ccc(1, low_pass_filter_taps, 1)
         self.fft_filter_xxx_0_0_0.declare_sample_delay(0)
-        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=384)
+        self.epy_block_0 = epy_block_0.blk(FileName=InFile, Pkt_len=60)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, "packet_len")
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_constellation_modulator_0 = digital.generic_mod(
@@ -155,7 +155,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
             log=False,
             truncate=False)
         self.blocks_uchar_to_float_0_0_0_0 = blocks.uchar_to_float()
-        self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_char*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_throttle2_0_0 = blocks.throttle( gr.sizeof_gr_complex*1, usrp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * usrp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
         self.blocks_repack_bits_bb_0_0 = blocks.repack_bits_bb(8, 1, "packet_len", False, gr.GR_MSB_FIRST)
 
@@ -166,15 +166,15 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_repack_bits_bb_0_0, 0), (self.blocks_uchar_to_float_0_0_0_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_repack_bits_bb_0_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.blocks_throttle2_0_0, 0), (self.digital_crc32_bb_0, 0))
+        self.connect((self.blocks_throttle2_0_0, 0), (self.zeromq_pub_sink_0, 0))
         self.connect((self.blocks_uchar_to_float_0_0_0_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.fft_filter_xxx_0_0_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.blocks_tagged_stream_mux_0, 1))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_protocol_formatter_bb_0, 0))
         self.connect((self.digital_protocol_formatter_bb_0, 0), (self.blocks_tagged_stream_mux_0, 0))
-        self.connect((self.epy_block_0, 0), (self.blocks_throttle2_0_0, 0))
+        self.connect((self.epy_block_0, 0), (self.digital_crc32_bb_0, 0))
         self.connect((self.fft_filter_xxx_0_0_0, 0), (self.mmse_resampler_xx_0, 0))
-        self.connect((self.mmse_resampler_xx_0, 0), (self.zeromq_pub_sink_0, 0))
+        self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_throttle2_0_0, 0))
 
 
     def closeEvent(self, event):
@@ -198,7 +198,6 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.set_low_pass_filter_taps(firdes.low_pass(1.0, self.samp_rate, 20000, 2000, window.WIN_HAMMING, 6.76))
-        self.blocks_throttle2_0_0.set_sample_rate(self.samp_rate)
         self.mmse_resampler_xx_0.set_resamp_ratio((1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
 
@@ -214,6 +213,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
 
     def set_usrp_rate(self, usrp_rate):
         self.usrp_rate = usrp_rate
+        self.blocks_throttle2_0_0.set_sample_rate(self.usrp_rate)
         self.mmse_resampler_xx_0.set_resamp_ratio((1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_sps(self):
