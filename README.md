@@ -50,7 +50,7 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. To use the SSB transmitter in this main branch, you must install gr-cessb as follows:  
+5. To use the SSB transmitter in this main branch, you must install gr-cessb using a terminal screen as follows:  
 
     cd  
     git clone https://github.com/drmpeg/gr-cessb.git  
@@ -204,6 +204,6 @@ In the NFM and SSB modules there is a variable `rs_ratio` which can be adjusted 
 <a name="creds"/>
 
 ## Credits
-Thanks to Ron Economos (w6rz) for updating gr-cessb to version 3.9. I have used his Controlled Envelope speech processing in both SSB and NFM transmitters.
+Thanks to Ron Economos (w6rz) for updating gr-cessb to version 3.9. I have used his Controlled Envelope speech processing in the SSB transmitter.
 
 
