@@ -5,6 +5,13 @@ This package contains GNU Radio flowgraphs for transmitters and receivers which 
 
 This is a modular design allowing various transmit and receive programs to operate with a common station control program. It is a "plug and play" concept and is a "testbed" to support additional modules while minimizing duplication of common functions.
 
+There are GNU Radio tutorials for some of the modules:
+
+* [Simulation example: Narrowband FM transceiver](https://wiki.gnuradio.org/index.php?title=Simulation_example:_Narrowband_FM_transceiver)
+* [Simulation example: Single Sideband transceiver](https://wiki.gnuradio.org/index.php?title=Simulation_example:_Single_Sideband_transceiver)
+* [File transfer using Packet and BPSK](https://wiki.gnuradio.org/index.php?title=File_transfer_using_Packet_and_BPSK)
+* [File transfer using Packet and AFSK](https://wiki.gnuradio.org/index.php?title=Simulation_example:_FSK#File_transfer_using_Packet_and_AFSK).
+
 ## Versions
 
 There are three branches of this repository:
@@ -167,10 +174,6 @@ cd ~/gr-control/Transmitters
     `python3 -u NFM_xmt.py`  
     `python3 -u SSB_xmt.py`  
 4. A new window will open showing an Audio Gain control, Output Level control, and an oscilloscope display. The NFM_xmt screen also has a selector for PL tones. Using a tone of 0.0 turns off the PL.
-
-### File Transfer using Packets
-
-For documentation on the Packet modules, refer to [File transfer using Packet and BPSK](https://wiki.gnuradio.org/index.php?title=File_transfer_using_Packet_and_BPSK) and [File transfer using Packet and AFSK](https://wiki.gnuradio.org/index.php?title=Simulation_example:_FSK#File_transfer_using_Packet_and_AFSK).
 
 <a name="loopback"/>
 
