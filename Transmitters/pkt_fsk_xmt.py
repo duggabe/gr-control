@@ -8,9 +8,8 @@
 # Title: pkt_fsk_xmt
 # Author: Barry Duggan
 # Description: packet FSK xmt
-# GNU Radio version: 3.10.6.0
+# GNU Radio version: 3.10.11.0-rc1
 
-from packaging.version import Version as StrictVersion
 from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio import blocks
@@ -28,6 +27,7 @@ from gnuradio import zeromq
 import math
 import pkt_fsk_xmt_epy_block_0 as epy_block_0  # embedded python block
 import sip
+import threading
 
 
 
@@ -54,15 +54,15 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "pkt_fsk_xmt")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "pkt_fsk_xmt")
 
         try:
-            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-                self.restoreGeometry(self.settings.value("geometry").toByteArray())
-            else:
-                self.restoreGeometry(self.settings.value("geometry"))
+            geometry = self.settings.value("geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Parameters
@@ -78,8 +78,8 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.center = center = (mark+space)/2
         self.vco_max = vco_max = center+fsk_deviation
         self.vco_offset = vco_offset = space/vco_max
-        self.samp_rate = samp_rate = 48000
-        self.baud = baud = 1200
+        self.samp_rate = samp_rate = 80000
+        self.baud = baud = 1000
         self.access_key = access_key = '11100001010110101110100010010011'
         self.thresh = thresh = 1
         self.repeat = repeat = (int)(samp_rate/baud)
@@ -90,7 +90,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49600', 100, False, (-1), '', True, True)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49601', 100, False, (-1), '', True, True)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             2048, #size
             samp_rate, #samp_rate
@@ -150,6 +150,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.blocks_uchar_to_float_0 = blocks.uchar_to_float()
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
+        self.blocks_repeat_1 = blocks.repeat(gr.sizeof_gr_complex*1, 100)
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_char*1, repeat)
         self.blocks_repack_bits_bb_1_0 = blocks.repack_bits_bb(8, 1, '', False, gr.GR_MSB_FIRST)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(inp_amp)
@@ -163,8 +164,9 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_uchar_to_float_0, 0))
+        self.connect((self.blocks_repeat_1, 0), (self.zeromq_pub_sink_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_repack_bits_bb_1_0, 0))
-        self.connect((self.blocks_throttle2_0, 0), (self.zeromq_pub_sink_0, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.blocks_repeat_1, 0))
         self.connect((self.blocks_uchar_to_float_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.blocks_uchar_to_float_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_vco_c_0, 0), (self.blocks_throttle2_0, 0))
@@ -175,7 +177,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "pkt_fsk_xmt")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "pkt_fsk_xmt")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -285,6 +287,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
 
     def set_hdr_format(self, hdr_format):
         self.hdr_format = hdr_format
+        self.digital_protocol_formatter_bb_0.set_header_format(self.hdr_format)
 
 
 
@@ -301,14 +304,12 @@ def main(top_block_cls=pkt_fsk_xmt, options=None):
     if options is None:
         options = argument_parser().parse_args()
 
-    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-        style = gr.prefs().get_string('qtgui', 'style', 'raster')
-        Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls(InFile=options.InFile)
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 
