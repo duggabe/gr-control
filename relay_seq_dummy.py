@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# relay_sequencer.py
+# relay_seq_dummy.py
 
-# This program operates in conjunction with gr-control/xmt_rcv_switch to sequence the relays for antenna and power amp control.
+# This program operates in conjunction with gr-control/xmt_rcv_switch to sequence the relays for antenna and power amp control. It is for simulation purposes and does not do any real switching.
 
 # NOTES:
 #   1) Messages are received on the SUB socket and sent on the PUB socket.
 #   2) The SUB and PUB messages must be on separate port numbers.
+#   3) The IP addresses for "_SUB_ADDR" and "_PUB_ADDR" are set for running this program in the same computer where `xmt_rcv_switch.py` will run. If that is not the case, see the NOTES in 'relay_sequencer.py'.
 
 # from gpiozero import LEDBoard
 import time
@@ -51,20 +52,20 @@ while True:
             if (_debug):
                 print ("t5")
 
-            # (6) delay 100 ms
-            time.sleep (0.1)
+            # (6) delay 50 ms
+            time.sleep (0.05)
 
             # (7) turn on power amp
             # leds.pwr_amp.off()    # NOTE: on is off!
             if (_debug):
                 print ("t7")
 
-            # (8) delay 250 ms
-            time.sleep (0.25)
+            # (8) delay 50 ms
+            time.sleep (0.05)
 
-            # Send reply back to client
+            # (9) send reply to client
             if (_debug):
-               print ("t8")
+               print ("t9")
             pub_sock.send (pmt.serialize_str(pmt.cons(pmt.intern("value"),pmt.from_long(3))))
 
         else:   # receive
@@ -74,21 +75,21 @@ while True:
             if (_debug):
                 print ("r7")
 
-            # (8) delay 250 ms
-            time.sleep (0.25)
+            # (6) delay 50 ms
+            time.sleep (0.05)
 
             # (5) switch antenna from xmt to rcv
             # leds.antenna.on()
             if (_debug):
                 print ("r5")
 
-            # (6) delay 100 ms
-            time.sleep (0.1)
+            # (8) delay 50 ms
+            time.sleep (0.05)
 
-            # Send reply back to client
-            if (_debug):
-                print ("r8")
+            # (9) send reply to client
             pub_sock.send (pmt.serialize_str(pmt.cons(pmt.intern("value"),pmt.from_long(2))))
+            if (_debug):
+                print ("r9")
 
     else:
         time.sleep(0.1) # wait 100ms and try again

@@ -72,7 +72,7 @@ git clone https://github.com/duggabe/gr-control.git
 <a name="ops"/>
 
 ## Operation
-**NOTE:** The latest update has two versions of the control module: `xmt_rcv_switch` using a USRP, and `xmt_rcv_switch_Pluto` using a ADALM Pluto. In the following instructions, use whichever one you like.
+**NOTE:** The `main` branch has two versions of the control module: `xmt_rcv_switch` using a USRP, and `xmt_rcv_switch_Pluto` using a ADALM Pluto. In the following instructions, use whichever one you like.
 
 The package uses four separate processes: (a) the station control module (`xmt_rcv_switch`), (b) a transmitter, (c) a receiver, and (d) the relay contol module (in a Raspberry Pi). They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
@@ -105,20 +105,23 @@ gnuradio-companion
 5. Change the IP address of the ZMQ PUB Message Sink to the IP of the computer where `xmt_rcv_switch.py` will run (your local computer).
 6. Click 'Execute the flowgraph' or press F6.
 7. A new window titled `xmt_rcv_switch` will open showing LED status indicators, Rcv Gain control, Tx gain control, Receive Freq, Offset (for repeaters), Transmit Freq, and a Transmit switch. Clicking the Transmit switch will perform the following sequence in conjunction with `relay_sequencer.py`.
-  * mute receiver
-  * turn off rcv LED
-  * turn on Antenna LED
-  * switch antenna from rcv to xmt
-  * delay 100 ms
-  * turn on power amp
-  * delay 250 ms
-  * turn on Amp LED
-  * delay 10 ms
-  * unmute transmitter
+* (1) mute receive
+* (2) turn off rcv LED
+* (3) send message to relay_sequencer
+* (4) turn on Antenna LED
 
-Note: the switching times are deliberately set long to allow visual observation of the sequence.
+* (5) switch antenna from rcv to xmt
+* (6) delay 50 ms
+* (7) turn on power amp
+* (8) delay 50 ms
+* (9) send reply to client
 
-Here is a screen shot:
+* (10) turn on Amp LED
+* (11) unmute the transmitter
+
+Turning off the Transmit switch will perform a similar sequence in reverse.
+
+Here is a screen shot of the `xmt_rcv_switch` GUI:
 
 <img src="./xmt_rcv_switch_out.png" width="432" height="246">
 
@@ -126,16 +129,20 @@ Here is a screen shot:
 
 The Raspberry Pi computer can be equipped with an add-on relay board. Wire jumpers are added from GPIO 17 to relay channel 1 (for the antenna) and from GPIO 27 to relay channel 2 (for the power amplifier).
 
+For simulation purposes, the `relay_seq_dummy.py` program can be run in place of a real Raspberry Pi. See the notes in the program for setting the IP adddresses.
+
+Delay times in the switching sequences can be adjusted to accommodate the associated relays and amplifiers.
+
 1. Open a terminal window on the Raspberry Pi.
 2. Download the `relay_sequencer.py` program.
 3. Edit the program as follows:
-    - change the `_SUB_ADDR` (on line 21) to the IP of the computer where `xmt_rcv_switch.py` will run.
-    - change the `_PUB_ADDR` (on line 29) to the IP of the Raspberry Pi.
+    - change the `_SUB_ADDR` (on line 23) to the IP of the computer where `xmt_rcv_switch.py` will run.
+    - change the `_PUB_ADDR` (on line 31) to the IP of the Raspberry Pi.
 4. Execute `relay_sequencer.py`.  
 ```
 python3 -u relay_sequencer.py
 ```
-5. The program displays the PUB and SUB socket addresses on the terminal. There is no user interface per se. If the variable `_debug` is set to `1`, the program will display progress messages when it is performing the switching sequences.
+5. The program displays the PUB and SUB socket addresses on the terminal. There is no user interface per se. However, if the variable `_debug` is set to `1`, the program will display progress messages when it is performing the switching sequences.
 
 ### Receiver
 
