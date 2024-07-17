@@ -8,17 +8,17 @@
 # Title: xmt_rcv_switch
 # Author: Barry Duggan
 # Description: Station control module
-# GNU Radio version: 3.10.6.0
+# GNU Radio version: 3.10.11.0-rc1
 
-from packaging.version import Version as StrictVersion
 from PyQt5 import Qt
 from gnuradio import qtgui
+from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, pyqtSlot
-from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import eng_notation
-from gnuradio import gr
+from gnuradio import filter
 from gnuradio.filter import firdes
+from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
@@ -28,8 +28,7 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import uhd
 import time
 from gnuradio import zeromq
-from gnuradio.qtgui import Range, RangeWidget
-from PyQt5 import QtCore
+import threading
 import xmt_rcv_switch_epy_block_0 as epy_block_0  # embedded python block
 
 
@@ -57,42 +56,41 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "xmt_rcv_switch")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "xmt_rcv_switch")
 
         try:
-            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-                self.restoreGeometry(self.settings.value("geometry").toByteArray())
-            else:
-                self.restoreGeometry(self.settings.value("geometry"))
+            geometry = self.settings.value("geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
         ##################################################
         self.offset = offset = 0
-        self.freq = freq = 432193500
+        self.freq = freq = 144.92e6
         self.tx_freq = tx_freq = freq+offset
         self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
         self.tx_gain = tx_gain = 0.5
         self.state = state = 0
         self.samp_rate = samp_rate = 768000
         self.gain = gain = 76
-        self.burst_key = burst_key = 0
 
         ##################################################
         # Blocks
         ##################################################
 
-        self._tx_gain_range = Range(0, 1.00, 0.1, 0.5, 200)
-        self._tx_gain_win = RangeWidget(self._tx_gain_range, self.set_tx_gain, "Tx gain", "slider", float, QtCore.Qt.Horizontal)
+        self._tx_gain_range = qtgui.Range(0, 1.00, 0.1, 0.5, 200)
+        self._tx_gain_win = qtgui.RangeWidget(self._tx_gain_range, self.set_tx_gain, "Tx gain", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._tx_gain_win, 2, 0, 1, 3)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._gain_range = Range(0, 76, 1, 76, 200)
-        self._gain_win = RangeWidget(self._gain_range, self.set_gain, "Rcv Gain", "slider", float, QtCore.Qt.Horizontal)
+        self._gain_range = qtgui.Range(0, 76, 1, 76, 200)
+        self._gain_win = qtgui.RangeWidget(self._gain_range, self.set_gain, "Rcv Gain", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._gain_win, 1, 0, 1, 3)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -102,7 +100,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self._freq_tool_bar.addWidget(Qt.QLabel("Receive Freq" + ": "))
         self._freq_line_edit = Qt.QLineEdit(str(self.freq))
         self._freq_tool_bar.addWidget(self._freq_line_edit)
-        self._freq_line_edit.returnPressed.connect(
+        self._freq_line_edit.editingFinished.connect(
             lambda: self.set_freq(eng_notation.str_to_num(str(self._freq_line_edit.text()))))
         self.top_grid_layout.addWidget(self._freq_tool_bar, 9, 0, 1, 1)
         for r in range(9, 10):
@@ -144,7 +142,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_rx_agc(False, 0)
         self.uhd_usrp_source_0.set_gain(gain, 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("send_frame_size=8192,num_send_frames=128", "", "master_clock_rate=30.72e6")),
+            ",".join(("send_frame_size=4096", "", "master_clock_rate=30.72e6")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -153,7 +151,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             '',
         )
         self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        # No synchronization enforced.
+        self.uhd_usrp_sink_0.set_time_now(uhd.time_spec(time.time()), uhd.ALL_MBOARDS)
 
         self.uhd_usrp_sink_0.set_center_freq(uhd.tune_request(tx_freq, 300000), 0)
         self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
@@ -211,39 +209,38 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.low_pass_filter_0 = filter.fir_filter_ccf(
+            1,
+            firdes.low_pass(
+                1,
+                samp_rate,
+                5000,
+                1000,
+                window.WIN_HAMMING,
+                6.76))
         self.epy_block_0 = epy_block_0.blk()
-        self.blocks_selector_0 = blocks.selector(gr.sizeof_gr_complex*1,0,0)
-        self.blocks_selector_0.set_enabled(False)
         self.blocks_mute_xx_0 = blocks.mute_cc(bool(False))
-        self.blocks_msgpair_to_var_0 = blocks.msg_pair_to_var(self.set_burst_key)
-        self.blocks_burst_tagger_0 = blocks.burst_tagger(gr.sizeof_gr_complex)
-        self.blocks_burst_tagger_0.set_true_tag('tx_sob',True)
-        self.blocks_burst_tagger_0.set_false_tag('tx_eob',True)
-        self.analog_const_source_x_0 = analog.sig_source_s(0, analog.GR_CONST_WAVE, 0, 0, burst_key)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.epy_block_0, 'burst'), (self.blocks_msgpair_to_var_0, 'inpair'))
         self.msg_connect((self.epy_block_0, 'rx_mute'), (self.blocks_mute_xx_0, 'set_mute'))
-        self.msg_connect((self.epy_block_0, 'tx_mute'), (self.blocks_selector_0, 'en'))
         self.msg_connect((self.epy_block_0, 'ant_sw'), (self.qtgui_ledindicator_0, 'state'))
         self.msg_connect((self.epy_block_0, 'pa_sw'), (self.qtgui_ledindicator_1, 'state'))
         self.msg_connect((self.epy_block_0, 'rx_led'), (self.qtgui_ledindicator_2, 'state'))
         self.msg_connect((self.epy_block_0, 'sw_cmd'), (self.zeromq_pub_msg_sink_0, 'in'))
         self.msg_connect((self.state, 'state'), (self.epy_block_0, 'msg_in'))
         self.msg_connect((self.zeromq_sub_msg_source_0, 'out'), (self.epy_block_0, 'msg_in'))
-        self.connect((self.analog_const_source_x_0, 0), (self.blocks_burst_tagger_0, 1))
-        self.connect((self.blocks_burst_tagger_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.blocks_mute_xx_0, 0), (self.zeromq_pub_sink_0, 0))
-        self.connect((self.blocks_selector_0, 0), (self.blocks_burst_tagger_0, 0))
+        self.connect((self.epy_block_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.blocks_mute_xx_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.blocks_selector_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.epy_block_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "xmt_rcv_switch")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "xmt_rcv_switch")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -300,6 +297,7 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5000, 1000, window.WIN_HAMMING, 6.76))
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
 
@@ -310,26 +308,17 @@ class xmt_rcv_switch(gr.top_block, Qt.QWidget):
         self.gain = gain
         self.uhd_usrp_source_0.set_gain(self.gain, 0)
 
-    def get_burst_key(self):
-        return self.burst_key
-
-    def set_burst_key(self, burst_key):
-        self.burst_key = burst_key
-        self.analog_const_source_x_0.set_offset(self.burst_key)
-
 
 
 
 def main(top_block_cls=xmt_rcv_switch, options=None):
 
-    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-        style = gr.prefs().get_string('qtgui', 'style', 'raster')
-        Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 

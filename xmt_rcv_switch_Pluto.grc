@@ -28,7 +28,7 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 12.0]
+    coordinate: [16, 16.0]
     rotation: 0
     state: enabled
 
@@ -36,16 +36,17 @@ blocks:
 - name: freq
   id: variable_qtgui_entry
   parameters:
-    comment: 9,0
+    comment: 9,0,1,1
+    entry_signal: editingFinished
     gui_hint: 9,0,1,1
     label: Receive Freq
     type: real
-    value: 432.2e6
+    value: 144.92e6
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 12.0]
+    coordinate: [504, 16.0]
     rotation: 0
     state: true
 - name: gain
@@ -66,7 +67,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 12.0]
+    coordinate: [272, 16.0]
     rotation: 0
     state: true
 - name: offset
@@ -96,7 +97,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 12.0]
+    coordinate: [640, 16.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -108,7 +109,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 156.0]
+    coordinate: [176, 16.0]
     rotation: 0
     state: enabled
 - name: tx_atten
@@ -123,13 +124,13 @@ blocks:
     start: '0'
     step: '1'
     stop: '89'
-    value: '0'
+    value: '20'
     widget: slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 12.0]
+    coordinate: [376, 16.0]
     rotation: 0
     state: true
 - name: tx_freq
@@ -141,7 +142,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [112, 156.0]
+    coordinate: [176, 88.0]
     rotation: 0
     state: true
 - name: variable_qtgui_label_0
@@ -157,7 +158,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 12.0]
+    coordinate: [808, 16.0]
     rotation: 0
     state: enabled
 - name: variable_qtgui_toggle_button_msg_0
@@ -180,7 +181,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 420.0]
+    coordinate: [24, 648.0]
     rotation: 0
     state: true
 - name: blocks_mute_xx_0
@@ -197,107 +198,118 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 224.0]
-    rotation: 0
-    state: true
-- name: blocks_selector_0
-  id: blocks_selector
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    enabled: 'False'
-    input_index: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_inputs: '1'
-    num_outputs: '1'
-    output_index: '0'
-    showports: 'False'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [536, 616.0]
+    coordinate: [560, 240.0]
     rotation: 0
     state: true
 - name: epy_block_0
   id: epy_block
   parameters:
     _source_code: "\"\"\"\nTransmit / Receive Controller\n\"\"\"\n\nimport numpy as\
-      \ np\nfrom gnuradio import gr\nimport time\nimport pmt\n\nclass blk(gr.sync_block):\n\
-      \    \"\"\"\n    reads input from a message port\n    generates control messages\n\
-      \    \"\"\"\n    def __init__(self):\n        gr.sync_block.__init__(self,\n\
-      \            name='XMT/RCV Control',   # will show up in GRC\n            in_sig=None,\n\
-      \            out_sig=None)\n        self.message_port_register_in(pmt.intern('msg_in'))\n\
-      \        self.message_port_register_out(pmt.intern('burst'))\n        self.message_port_register_out(pmt.intern('tx_mute'))\n\
+      \ np\nfrom gnuradio import gr\nimport time\nimport pmt\nimport math\n\n\"\"\"\
+      \nState definitions\n    0   idle/rcv\n    1   start xmt\n    2   xmt active\n\
+      \    3   send tx_eob\n\"\"\"\n\nclass blk(gr.basic_block):\n    \"\"\"\n   \
+      \ reads input from a message port\n    generates control messages\n    \"\"\"\
+      \n    def __init__(self):\n        gr.basic_block.__init__(self,\n         \
+      \   name='XMT/RCV Control',   # will show up in GRC\n            in_sig=[np.complex64],\n\
+      \            out_sig=[np.complex64])\n        self.message_port_register_in(pmt.intern('msg_in'))\n\
       \        self.message_port_register_out(pmt.intern('rx_led'))\n        self.message_port_register_out(pmt.intern('ant_sw'))\n\
       \        self.message_port_register_out(pmt.intern('sw_cmd'))\n        self.message_port_register_out(pmt.intern('pa_sw'))\n\
       \        self.message_port_register_out(pmt.intern('rx_mute'))\n        self.set_msg_handler(pmt.intern('msg_in'),\
-      \ self.handle_msg)\n\n    def handle_msg(self, msg):\n        _debug = 0   \
-      \       # set to zero to turn off diagnostics\n\n        try:\n            new_val\
-      \ = pmt.to_python(pmt.cdr(msg))\n        except Exception as e:\n          \
-      \  gr.log.error(\"Error with message conversion: %s\" % str(e))\n        if\
-      \ (_debug):\n            print (\"new_val =\", new_val)\n        if (new_val\
-      \ == 1):\n\n            # (1) mute receive\n            if (_debug):\n     \
-      \           print (\"t1\")\n            self.message_port_pub(pmt.intern('rx_mute'),\
-      \ pmt.to_pmt(True))\n\n            # (2) turn off rcv LED\n            if (_debug):\n\
+      \ self.handle_msg)\n        self.state = 0      # idle state\n        self.indx\
+      \ = 0       # index for tags\n        self._debug = 0     # set to 1 to turn\
+      \ on diagnostics\n        if (self._debug):\n            print (\"_debug =\"\
+      , self._debug)\n        self.tag_flags = 0  # bit flags:\n                #\
+      \ 1 - use tx_sob/tx_eob; \n                # 2 - use start tx_time; \n     \
+      \           # 4 - use end tx_time\n        if (self.tag_flags > 0):\n      \
+      \      print (\"tag_flags =\", self.tag_flags)\n\n    def handle_msg(self, msg):\n\
+      \        try:\n            new_val = pmt.to_python(pmt.cdr(msg))\n        except\
+      \ Exception as e:\n            gr.log.error(\"Error with message conversion:\
+      \ %s\" % str(e))\n        if (self._debug):\n            print (\"new_val =\"\
+      , new_val)\n        if (new_val == 1):\n\n            # (1) mute receive\n \
+      \           if (self._debug):\n                print (\"t1\")\n            self.message_port_pub(pmt.intern('rx_mute'),\
+      \ pmt.to_pmt(True))\n\n            # (2) turn off rcv LED\n            if (self._debug):\n\
       \                print (\"t2\")\n            self.message_port_pub(pmt.intern('rx_led'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(False)))\n\
-      \n            # (3) send message to relay_sequencer\n            if (_debug):\n\
+      \n            # (3) send message to relay_sequencer\n            if (self._debug):\n\
       \                print (\"t3\")\n            self.message_port_pub(pmt.intern('sw_cmd'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_long(1)))\n\
-      \n            # (4) turn on Antenna LED\n            if (_debug):\n        \
-      \        print (\"t4\")\n            self.message_port_pub(pmt.intern('ant_sw'),\n\
+      \n            # (4) turn on Antenna LED\n            if (self._debug):\n   \
+      \             print (\"t4\")\n            self.message_port_pub(pmt.intern('ant_sw'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(True)))\n\
-      \n        elif (new_val == 3):\n\n            # (9) turn on Amp LED\n      \
-      \      if (_debug):\n                print (\"t9\")\n            self.message_port_pub(pmt.intern('pa_sw'),\n\
+      \n        elif (new_val == 3):\n\n            # (10) turn on Amp LED\n     \
+      \       if (self._debug):\n                print (\"t10\")\n            self.message_port_pub(pmt.intern('pa_sw'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(True)))\n\
-      \n            # (10) delay 10 ms\n            time.sleep (0.01)\n\n        \
-      \    # (11) unmute transmit (enable Selector)\n            if (_debug):\n  \
-      \              print (\"t11\")\n            self.message_port_pub(pmt.intern('tx_mute'),\
-      \ pmt.to_pmt(True))\n\n            # (12) send message to burst tagger\n   \
-      \         if (_debug):\n                print (\"t12\")\n            self.message_port_pub(pmt.intern('burst'),\n\
-      \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_long(1)))\n\
-      \n        elif (new_val == 0):\n\n            # (12) send message to burst tagger\n\
-      \            if (_debug):\n                print (\"t12\")\n            self.message_port_pub(pmt.intern('burst'),\n\
+      \n            # (11) send tx_sob (state 1)\n            self.state = 1     \
+      \ # start xmt\n\n        elif (new_val == 0):\n\n            # (11) send tx_eob\
+      \ (state 3)\n            self.state = 3      # stop xmt\n\n            # (10)\
+      \ send message to relay_sequencer\n            if (self._debug):\n         \
+      \       print (\"r10\")\n            self.message_port_pub(pmt.intern('sw_cmd'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_long(0)))\n\
-      \n            # (11.5) delay 5 ms\n            time.sleep (0.005)\n\n      \
-      \      # (11) mute transmit (disable Selector)\n            if (_debug):\n \
-      \               print (\"r11\")\n            self.message_port_pub(pmt.intern('tx_mute'),\
-      \ pmt.to_pmt(False))\n\n            # (10) send message to relay_sequencer\n\
-      \            if (_debug):\n                print (\"r10\")\n            self.message_port_pub(pmt.intern('sw_cmd'),\n\
-      \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_long(0)))\n\
-      \n            # (9) turn off Amp LED\n            if (_debug):\n           \
-      \     print (\"r9\")\n            self.message_port_pub(pmt.intern('pa_sw'),\n\
+      \n            # (9) turn off Amp LED\n            if (self._debug):\n      \
+      \          print (\"r9\")\n            self.message_port_pub(pmt.intern('pa_sw'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(False)))\n\
       \n        elif (new_val == 2):\n\n            # (4) turn off Antenna LED\n \
-      \           if (_debug):\n                print (\"r4\")\n            self.message_port_pub(pmt.intern('ant_sw'),\n\
+      \           if (self._debug):\n                print (\"r4\")\n            self.message_port_pub(pmt.intern('ant_sw'),\n\
       \                pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(False)))\n\
-      \n            # (3) delay 10 ms\n            time.sleep (0.01)\n\n         \
-      \   # (2) turn on rcv LED\n            if (_debug):\n                print (\"\
-      r2\")\n            self.message_port_pub(pmt.intern('rx_led'),\n           \
-      \     pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(True)))\n\
-      \n            # unmute receive\n            if (_debug):\n                print\
-      \ (\"r1\")\n            self.message_port_pub(pmt.intern('rx_mute'), pmt.to_pmt(False))\n\
-      \n\n"
+      \n            #     set state 0\n            self.state = 0\n\n            #\
+      \ (2) turn on rcv LED\n            if (self._debug):\n                print\
+      \ (\"r2\")\n            self.message_port_pub(pmt.intern('rx_led'),\n      \
+      \          pmt.cons(pmt.intern('pressed'),\n                pmt.from_bool(True)))\n\
+      \n            # (1) unmute receive\n            if (self._debug):\n        \
+      \        print (\"r1\")\n            self.message_port_pub(pmt.intern('rx_mute'),\
+      \ pmt.to_pmt(False))\n\n    def general_work(self, input_items, output_items):\n\
+      \        #buffer references\n        in0 = input_items[0][:len(output_items[0])]\n\
+      \        out = output_items[0]\n\n        if (self.state == 0):\n          \
+      \  o_len = 0\n\n        elif (self.state == 1):\n            if (self._debug):\n\
+      \                print (\"state = 1\", self.indx)\n\n            if (self.tag_flags\
+      \ & 1):\n                key1 = pmt.intern(\"tx_sob\")\n                val1\
+      \ = pmt.PMT_T\n                self.add_item_tag(0, # Write to output port 0\n\
+      \                    self.indx,   # Index of the tag\n                    key1,\
+      \   # Key of the tag\n                    val1    # Value of the tag\n     \
+      \               )\n\n            if (self.tag_flags & 2):\n                now\
+      \ = time.time()\n                t_tag = now         # + 0.010\n           \
+      \     t_sec = (int)(math.floor(t_tag))\n                t_frac = t_tag - t_sec\n\
+      \                key2 = pmt.intern(\"tx_time\")\n                val2 = pmt.to_pmt((t_sec,\
+      \ t_frac))\n                self.add_item_tag(0, # Write to output port 0\n\
+      \                    self.indx,   # Index of the tag\n                    key2,\
+      \   # Key of the tag\n                    val2    # Value of the tag\n     \
+      \               )\n\n            out[:] = in0    # pass thru\n            o_len\
+      \ = len(output_items[0])\n            self.indx += o_len\n            self.state\
+      \ = 2      # xmt active\n\n        elif (self.state == 2):\n            out[:]\
+      \ = in0    # pass thru\n            o_len = len(output_items[0])\n         \
+      \   self.indx += o_len\n\n        elif (self.state == 3):\n            if (self._debug):\n\
+      \                print (\"state = 3\", self.indx)\n\n            out[:] = in0\
+      \    # pass thru\n            o_len = len(output_items[0])\n            self.indx\
+      \ += o_len\n\n            if (self.tag_flags & 1):\n                key1 = pmt.intern(\"\
+      tx_eob\")\n                val1 = pmt.PMT_T\n                self.add_item_tag(0,\
+      \ # Write to output port 0\n                    (self.indx-1),   # Index of\
+      \ the tag\n                    key1,   # Key of the tag\n                  \
+      \  val1    # Value of the tag\n                    )\n\n            if (self.tag_flags\
+      \ & 4):\n                now = time.time()\n                t_tag = now    \
+      \     # + 0.010\n                t_sec = (int)(math.floor(t_tag))\n        \
+      \        t_frac = t_tag - t_sec\n                key2 = pmt.intern(\"tx_time\"\
+      )\n                val2 = pmt.to_pmt((t_sec, t_frac))\n                self.add_item_tag(0,\
+      \ # Write to output port 0\n                    (self.indx-1),   # Index of\
+      \ the tag\n                    key2,   # Key of the tag\n                  \
+      \  val2    # Value of the tag\n                    )\n\n            self.state\
+      \ = 0      # stop sending data\n\n        #consume the inputs\n        self.consume(0,\
+      \ len(in0))   # consume port 0 input\n\n        #return produced\n        return\
+      \ (o_len)\n\n"
     affinity: ''
     alias: ''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
-    _io_cache: ('XMT/RCV Control', 'blk', [], [('msg_in', 'message', 1)], [('rx_mute',
-      'message', 1), ('pa_sw', 'message', 1), ('sw_cmd', 'message', 1), ('ant_sw',
-      'message', 1), ('rx_led', 'message', 1), ('tx_mute', 'message', 1), ('burst',
-      'message', 1)], '\n    reads input from a message port\n    generates control
-      messages\n    ', [])
+    _io_cache: ('XMT/RCV Control', 'blk', [], [('0', 'complex', 1), ('msg_in', 'message',
+      1)], [('0', 'complex', 1), ('rx_mute', 'message', 1), ('pa_sw', 'message', 1),
+      ('sw_cmd', 'message', 1), ('ant_sw', 'message', 1), ('rx_led', 'message', 1)],
+      '\n    reads input from a message port\n    generates control messages\n    ',
+      [])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 368.0]
+    coordinate: [288, 416.0]
     rotation: 0
     state: true
 - name: iio_pluto_sink_0
@@ -323,7 +335,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [928, 604.0]
+    coordinate: [880, 348.0]
     rotation: 0
     state: true
 - name: iio_pluto_source_0
@@ -354,7 +366,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 140.0]
+    coordinate: [272, 180.0]
     rotation: 0
     state: true
 - name: low_pass_filter_0
@@ -378,7 +390,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 612.0]
+    coordinate: [704, 356.0]
     rotation: 0
     state: true
 - name: note_0
@@ -393,7 +405,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 220.0]
+    coordinate: [16, 176.0]
     rotation: 0
     state: true
 - name: qtgui_ledindicator_0
@@ -415,7 +427,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 324.0]
+    coordinate: [536, 464.0]
     rotation: 0
     state: true
 - name: qtgui_ledindicator_1
@@ -437,7 +449,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 436.0]
+    coordinate: [536, 608.0]
     rotation: 0
     state: true
 - name: qtgui_ledindicator_2
@@ -459,7 +471,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 516.0]
+    coordinate: [536, 680.0]
     rotation: 0
     state: true
 - name: zeromq_pub_msg_sink_0
@@ -475,7 +487,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 356.0]
+    coordinate: [536, 536.0]
     rotation: 0
     state: true
 - name: zeromq_pub_sink_0
@@ -497,7 +509,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 204.0]
+    coordinate: [696, 216.0]
     rotation: 0
     state: true
 - name: zeromq_sub_msg_source_0
@@ -515,7 +527,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 356.0]
+    coordinate: [24, 576.0]
     rotation: 0
     state: true
 - name: zeromq_sub_source_0
@@ -538,25 +550,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [128, 588.0]
+    coordinate: [24, 440.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_mute_xx_0, '0', zeromq_pub_sink_0, '0']
-- [blocks_selector_0, '0', low_pass_filter_0, '0']
+- [epy_block_0, '0', low_pass_filter_0, '0']
 - [epy_block_0, ant_sw, qtgui_ledindicator_1, state]
 - [epy_block_0, pa_sw, qtgui_ledindicator_0, state]
 - [epy_block_0, rx_led, qtgui_ledindicator_2, state]
 - [epy_block_0, rx_mute, blocks_mute_xx_0, set_mute]
 - [epy_block_0, sw_cmd, zeromq_pub_msg_sink_0, in]
-- [epy_block_0, tx_mute, blocks_selector_0, en]
 - [iio_pluto_source_0, '0', blocks_mute_xx_0, '0']
 - [low_pass_filter_0, '0', iio_pluto_sink_0, '0']
 - [variable_qtgui_toggle_button_msg_0, state, epy_block_0, msg_in]
 - [zeromq_sub_msg_source_0, out, epy_block_0, msg_in]
-- [zeromq_sub_source_0, '0', blocks_selector_0, '0']
+- [zeromq_sub_source_0, '0', epy_block_0, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.6.0
+  grc_version: 3.10.11.0-rc1

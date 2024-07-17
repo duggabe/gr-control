@@ -8,11 +8,11 @@
 # Title: xmt_rcv_switch_Pluto
 # Author: Barry Duggan
 # Description: Pluto Station control module
-# GNU Radio version: 3.10.6.0
+# GNU Radio version: 3.10.11.0-rc1
 
-from packaging.version import Version as StrictVersion
 from PyQt5 import Qt
 from gnuradio import qtgui
+from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import blocks
 from gnuradio import eng_notation
@@ -27,8 +27,7 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import iio
 from gnuradio import zeromq
-from gnuradio.qtgui import Range, RangeWidget
-from PyQt5 import QtCore
+import threading
 import xmt_rcv_switch_Pluto_epy_block_0 as epy_block_0  # embedded python block
 
 
@@ -56,25 +55,25 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "xmt_rcv_switch_Pluto")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "xmt_rcv_switch_Pluto")
 
         try:
-            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-                self.restoreGeometry(self.settings.value("geometry").toByteArray())
-            else:
-                self.restoreGeometry(self.settings.value("geometry"))
+            geometry = self.settings.value("geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
         ##################################################
         self.offset = offset = 0
-        self.freq = freq = 432.2e6
+        self.freq = freq = 144.92e6
         self.tx_freq = tx_freq = freq+offset
         self.variable_qtgui_toggle_button_msg_0 = variable_qtgui_toggle_button_msg_0 = 0
         self.variable_qtgui_label_0 = variable_qtgui_label_0 = tx_freq
-        self.tx_atten = tx_atten = 0
+        self.tx_atten = tx_atten = 20
         self.samp_rate = samp_rate = 768000
         self.gain = gain = 50
 
@@ -82,15 +81,15 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self._tx_atten_range = Range(0, 89, 1, 0, 200)
-        self._tx_atten_win = RangeWidget(self._tx_atten_range, self.set_tx_atten, "Tx Attenuation", "slider", float, QtCore.Qt.Horizontal)
+        self._tx_atten_range = qtgui.Range(0, 89, 1, 20, 200)
+        self._tx_atten_win = qtgui.RangeWidget(self._tx_atten_range, self.set_tx_atten, "Tx Attenuation", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._tx_atten_win, 2, 0, 1, 3)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._gain_range = Range(0, 73, 1, 50, 200)
-        self._gain_win = RangeWidget(self._gain_range, self.set_gain, "Rcv Gain", "slider", float, QtCore.Qt.Horizontal)
+        self._gain_range = qtgui.Range(0, 73, 1, 50, 200)
+        self._gain_win = qtgui.RangeWidget(self._gain_range, self.set_gain, "Rcv Gain", "slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._gain_win, 1, 0, 1, 3)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -100,7 +99,7 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         self._freq_tool_bar.addWidget(Qt.QLabel("Receive Freq" + ": "))
         self._freq_line_edit = Qt.QLineEdit(str(self.freq))
         self._freq_tool_bar.addWidget(self._freq_line_edit)
-        self._freq_line_edit.returnPressed.connect(
+        self._freq_line_edit.editingFinished.connect(
             lambda: self.set_freq(eng_notation.str_to_num(str(self._freq_line_edit.text()))))
         self.top_grid_layout.addWidget(self._freq_tool_bar, 9, 0, 1, 1)
         for r in range(9, 10):
@@ -205,8 +204,6 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         self.iio_pluto_sink_0.set_attenuation(0, tx_atten)
         self.iio_pluto_sink_0.set_filter_params('Auto', '', samp_rate/4, samp_rate/3)
         self.epy_block_0 = epy_block_0.blk()
-        self.blocks_selector_0 = blocks.selector(gr.sizeof_gr_complex*1,0,0)
-        self.blocks_selector_0.set_enabled(False)
         self.blocks_mute_xx_0 = blocks.mute_cc(bool(False))
 
 
@@ -214,7 +211,6 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.epy_block_0, 'rx_mute'), (self.blocks_mute_xx_0, 'set_mute'))
-        self.msg_connect((self.epy_block_0, 'tx_mute'), (self.blocks_selector_0, 'en'))
         self.msg_connect((self.epy_block_0, 'pa_sw'), (self.qtgui_ledindicator_0, 'state'))
         self.msg_connect((self.epy_block_0, 'ant_sw'), (self.qtgui_ledindicator_1, 'state'))
         self.msg_connect((self.epy_block_0, 'rx_led'), (self.qtgui_ledindicator_2, 'state'))
@@ -222,14 +218,14 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
         self.msg_connect((self.variable_qtgui_toggle_button_msg_0, 'state'), (self.epy_block_0, 'msg_in'))
         self.msg_connect((self.zeromq_sub_msg_source_0, 'out'), (self.epy_block_0, 'msg_in'))
         self.connect((self.blocks_mute_xx_0, 0), (self.zeromq_pub_sink_0, 0))
-        self.connect((self.blocks_selector_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.epy_block_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.iio_pluto_source_0, 0), (self.blocks_mute_xx_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.iio_pluto_sink_0, 0))
-        self.connect((self.zeromq_sub_source_0, 0), (self.blocks_selector_0, 0))
+        self.connect((self.zeromq_sub_source_0, 0), (self.epy_block_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "xmt_rcv_switch_Pluto")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "xmt_rcv_switch_Pluto")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -241,17 +237,17 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
 
     def set_offset(self, offset):
         self.offset = offset
-        self.set_tx_freq(self.freq+self.offset)
         self._offset_callback(self.offset)
+        self.set_tx_freq(self.freq+self.offset)
 
     def get_freq(self):
         return self.freq
 
     def set_freq(self, freq):
         self.freq = freq
-        Qt.QMetaObject.invokeMethod(self._freq_line_edit, "setText", Qt.Q_ARG("QString", eng_notation.num_to_str(self.freq)))
         self.set_tx_freq(self.freq+self.offset)
         self.iio_pluto_source_0.set_frequency(int(self.freq))
+        Qt.QMetaObject.invokeMethod(self._freq_line_edit, "setText", Qt.Q_ARG("QString", eng_notation.num_to_str(self.freq)))
 
     def get_tx_freq(self):
         return self.tx_freq
@@ -304,14 +300,12 @@ class xmt_rcv_switch_Pluto(gr.top_block, Qt.QWidget):
 
 def main(top_block_cls=xmt_rcv_switch_Pluto, options=None):
 
-    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
-        style = gr.prefs().get_string('qtgui', 'style', 'raster')
-        Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 
