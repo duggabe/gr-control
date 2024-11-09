@@ -14,15 +14,16 @@ There are GNU Radio tutorials for some of the modules:
 
 ## Versions
 
-There are three branches of this repository:
+There are four branches of this repository:
 
-* `main` (the default) is the current development branch. It contains flowgraphs for GNU Radio 3.9 and 3.10. An additional process is added to implement the relay controls using a Raspberry Pi computer. There are no current plans to "backport" new code to the "maint" branches.
-* `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load if used on a Raspberry Pi computer.
+* `main` (the default) is the current development branch. It contains flowgraphs for GNU Radio 3.9 and 3.10. There are no current plans to "backport" new code to the "maint" branches.
+* `maint-3.10` contains flowgraphs for GNU Radio 3.10 and supports both USRP and ADALM-Pluto devices. An additional process is added to implement the relay controls using a Raspberry Pi computer. The sample rate is set to 768kHz.
 * `maint-3.9` contains flowgraphs for GNU Radio 3.9 and uses a USRP device. The sample rate is set to 768kHz.
+* `maint-3.8` contains flowgraphs for GNU Radio 3.8 and uses an ADALM-Pluto. The sample rate is set to 576kHz to minimize the processing load if used on a Raspberry Pi computer.
 
 Near the top of this page is a pull-down to select the branches.
 
-<img src="./branch_selection.png" width="200" height="200">
+<img src="./branch_selection.png" width="200" height="201">
 
 **Choose the branch you want, then continue with the README.md instuctions for that branch**.
 
@@ -57,7 +58,7 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. To use the SSB transmitter in this main branch, you must install gr-cessb using a terminal screen as follows:  
+5. To use the SSB transmitter in this branch, you must install gr-cessb using a terminal screen as follows:  
 
     cd  
     git clone https://github.com/drmpeg/gr-cessb.git  
@@ -72,7 +73,7 @@ git clone https://github.com/duggabe/gr-control.git
 <a name="ops"/>
 
 ## Operation
-**NOTE:** The `main` branch has two versions of the control module: `xmt_rcv_switch` using a USRP, and `xmt_rcv_switch_Pluto` using a ADALM Pluto. In the following instructions, use whichever one you like.
+**NOTE:** This branch has two versions of the control module: `xmt_rcv_switch` using a USRP, and `xmt_rcv_switch_Pluto` using a ADALM Pluto. In the following instructions, use whichever one you like.
 
 The package uses four separate processes: (a) the station control module (`xmt_rcv_switch`), (b) a transmitter, (c) a receiver, and (d) the relay contol module (in a Raspberry Pi). They all can be on the same computer or on two or more separate computers by adjusting the ZMQ socket addresses. See [ZMQ PUB Sink](https://wiki.gnuradio.org/index.php/ZMQ_PUB_Sink#Parameters) for an explanation of Addresses.
 
@@ -195,7 +196,7 @@ cd ~/gr-control
 3. Execute one of the loopback programs.  
     `python3 -u loopback_test.py`  
     `python3 -u chan_loopback.py`  
-4. A new window will open showing a chooser for the Sample rate. For the version 3.9 and 3.10 programs, select 768kHz. 
+4. A new window will open showing a chooser for the Sample rate. For the `maint-3.9`, `maint-3.10`, and `main` branches, select 768kHz. 
 5. Proceed with starting a receive program (such as `NFM_rcv`) and a corresponding transmit program (such as `NFM_xmt`) in separate processes.
 
 <a name="under"/>
