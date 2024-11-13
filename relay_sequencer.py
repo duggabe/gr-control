@@ -11,16 +11,22 @@
 #   3) Change the IP address of "_SUB_ADDR" to the IP of the computer where `xmt_rcv_switch.py` will run.
 #   4) Change the IP address of "_PUB_ADDR" to the IP of the Raspberry Pi.
 
-from gpiozero import LEDBoard
+#   revision v3.0.1.0
+#       use OutputDevice instead of LEDBoard
+#       use 'active_high=False'
+
 import time
 import pmt
 import zmq
+import gpiozero
 
-leds = LEDBoard(antenna=17, pwr_amp=27)
-_debug = 0          # set to zero to turn off diagnostics
+antenna = gpiozero.OutputDevice(17, active_high=False, initial_value=False)
+pwr_amp = gpiozero.OutputDevice(27, active_high=False, initial_value=False)
+
+_debug = 0          # set to 1 to turn on diagnostics
 
 # create a SUB socket
-_SUB_ADDR = "tcp://192.168.1.194:49202"
+_SUB_ADDR = "tcp://192.168.1.194:49202"     # IP of 'xmt_rcv_switch' computer
 print ("'relay_sequencer' connecting to:", _SUB_ADDR)
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
@@ -28,16 +34,16 @@ socket.connect(_SUB_ADDR)
 socket.setsockopt(zmq.SUBSCRIBE, b'')
 
 # create a PUB socket
-_PUB_ADDR = "tcp://192.168.1.137:49204"
+_PUB_ADDR = "tcp://192.168.1.137:49204"     # IP of rPi (this computer)
 print ("'relay_sequencer' binding to:", _PUB_ADDR)
 pub_context = zmq.Context()
 pub_sock = pub_context.socket (zmq.PUB)
 rc = pub_sock.bind (_PUB_ADDR)
 
-# (7) turn off power amp
-leds.pwr_amp.on()    # NOTE: on is off!
-# (5) switch antenna from xmt to rcv
-leds.antenna.on()
+# turn off power amp
+pwr_amp.off()
+# switch antenna from xmt to rcv
+antenna.off()
 
 while True:
     if (socket.poll(10) != 0):  # check if there is a message on the socket
@@ -49,17 +55,17 @@ while True:
         if (new_val > 0):   #transmit
 
             # (5) switch antenna from rcv to xmt
-            leds.antenna.off()    # NOTE: on is off!
+            antenna.on()
             if (_debug):
-                print ("t5")
+                print ("antenna.on")
 
             # (6) delay 50 ms
             time.sleep (0.05)
 
             # (7) turn on power amp
-            leds.pwr_amp.off()    # NOTE: on is off!
+            pwr_amp.on()
             if (_debug):
-                print ("t7")
+                print ("pwr_amp.on")
 
             # (8) delay 50 ms
             time.sleep (0.05)
@@ -72,17 +78,17 @@ while True:
         else:   # receive
 
             # (7) turn off power amp
-            leds.pwr_amp.on()
+            pwr_amp.off()
             if (_debug):
-                print ("r7")
+                print ("pwr_amp.off")
 
             # (6) delay 50 ms
             time.sleep (0.05)
 
             # (5) switch antenna from xmt to rcv
-            leds.antenna.on()
+            antenna.off()
             if (_debug):
-                print ("r5")
+                print ("antenna.off")
 
             # (8) delay 50 ms
             time.sleep (0.05)

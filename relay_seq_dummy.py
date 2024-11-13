@@ -10,13 +10,14 @@
 #   2) The SUB and PUB messages must be on separate port numbers.
 #   3) The IP addresses for "_SUB_ADDR" and "_PUB_ADDR" are set for running this program in the same computer where `xmt_rcv_switch.py` will run. If that is not the case, see the NOTES in 'relay_sequencer.py'.
 
-# from gpiozero import LEDBoard
+#   revision v3.0.1.0
+#       cleanup
+
 import time
 import pmt
 import zmq
 
-# leds = LEDBoard(antenna=17, pwr_amp=27)
-_debug = 0          # set to zero to turn off diagnostics
+_debug = 0          # set to 1 to turn on diagnostics
 
 # create a SUB socket
 _SUB_ADDR = "tcp://127.0.0.1:49202"
@@ -33,11 +34,6 @@ pub_context = zmq.Context()
 pub_sock = pub_context.socket (zmq.PUB)
 rc = pub_sock.bind (_PUB_ADDR)
 
-# (7) turn off power amp
-# leds.pwr_amp.on()    # NOTE: on is off!
-# (5) switch antenna from xmt to rcv
-# leds.antenna.on()
-
 while True:
     if (socket.poll(10) != 0):  # check if there is a message on the socket
         msg = socket.recv()     # grab the message
@@ -48,7 +44,6 @@ while True:
         if (new_val > 0):   #transmit
 
             # (5) switch antenna from rcv to xmt
-            # leds.antenna.off()    # NOTE: on is off!
             if (_debug):
                 print ("t5")
 
@@ -56,7 +51,6 @@ while True:
             time.sleep (0.05)
 
             # (7) turn on power amp
-            # leds.pwr_amp.off()    # NOTE: on is off!
             if (_debug):
                 print ("t7")
 
@@ -71,7 +65,6 @@ while True:
         else:   # receive
 
             # (7) turn off power amp
-            # leds.pwr_amp.on()
             if (_debug):
                 print ("r7")
 
@@ -79,7 +72,6 @@ while True:
             time.sleep (0.05)
 
             # (5) switch antenna from xmt to rcv
-            # leds.antenna.on()
             if (_debug):
                 print ("r5")
 

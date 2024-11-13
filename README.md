@@ -137,8 +137,8 @@ Delay times in the switching sequences can be adjusted to accommodate the associ
 1. Open a terminal window on the Raspberry Pi.
 2. Download the `relay_sequencer.py` program.
 3. Edit the program as follows:
-    - change the `_SUB_ADDR` (on line 23) to the IP of the computer where `xmt_rcv_switch.py` will run.
-    - change the `_PUB_ADDR` (on line 31) to the IP of the Raspberry Pi.
+    - change the `_SUB_ADDR` (on line 29) to the IP of the computer where `xmt_rcv_switch.py` will run.
+    - change the `_PUB_ADDR` (on line 37) to the IP of the Raspberry Pi.
 4. Execute `relay_sequencer.py`.  
 ```
 python3 -u relay_sequencer.py
