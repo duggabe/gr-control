@@ -33,7 +33,6 @@ Near the top of this page is a pull-down to select the branches.
 [Operation](#ops)  
 [Testing](#loopback)  
 [Underruns](#under)  
-[Credits](#creds)  
 
 <a name="install"/>
 
@@ -58,17 +57,6 @@ sudo apt install git
 ```
 git clone https://github.com/duggabe/gr-control.git
 ```
-5. To use the SSB transmitter in this branch, you must install gr-cessb using a terminal screen as follows:  
-
-    cd  
-    git clone https://github.com/drmpeg/gr-cessb.git  
-    cd ~/gr-cessb  
-    mkdir build  
-    cd build  
-    cmake ../  
-    make  
-    sudo make install  
-    sudo ldconfig  
 
 <a name="ops"/>
 
@@ -211,10 +199,4 @@ For audio underruns, refer to [Working with ALSA and Pulse Audio](https://wiki.g
 ### SDR underruns
 
 In the NFM and SSB modules there is a variable `rs_ratio` which can be adjusted by small amounts to help correct the problem on your computer. When the variable is changed, the flowgraph must be Generated again before running.
-
-<a name="creds"/>
-
-## Credits
-Thanks to Ron Economos (w6rz) for updating gr-cessb to version 3.9. I have used his Controlled Envelope speech processing in the SSB transmitter.
-
 
