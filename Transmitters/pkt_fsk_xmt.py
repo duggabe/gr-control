@@ -8,7 +8,7 @@
 # Title: pkt_fsk_xmt
 # Author: Barry Duggan
 # Description: packet FSK xmt
-# GNU Radio version: 3.10.11.0-rc1
+# GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -78,8 +78,8 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.center = center = (mark+space)/2
         self.vco_max = vco_max = center+fsk_deviation
         self.vco_offset = vco_offset = space/vco_max
-        self.samp_rate = samp_rate = 80000
-        self.baud = baud = 1000
+        self.samp_rate = samp_rate = 48000
+        self.baud = baud = 1200
         self.access_key = access_key = '11100001010110101110100010010011'
         self.thresh = thresh = 1
         self.repeat = repeat = (int)(samp_rate/baud)
@@ -90,7 +90,7 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49601', 100, False, (-1), '', True, True)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49600', 100, False, (-1), '', True, True)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             2048, #size
             samp_rate, #samp_rate
@@ -150,7 +150,6 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.blocks_uchar_to_float_0 = blocks.uchar_to_float()
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, 'packet_len', 0)
-        self.blocks_repeat_1 = blocks.repeat(gr.sizeof_gr_complex*1, 100)
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_char*1, repeat)
         self.blocks_repack_bits_bb_1_0 = blocks.repack_bits_bb(8, 1, '', False, gr.GR_MSB_FIRST)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(inp_amp)
@@ -164,9 +163,8 @@ class pkt_fsk_xmt(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_uchar_to_float_0, 0))
-        self.connect((self.blocks_repeat_1, 0), (self.zeromq_pub_sink_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.blocks_repack_bits_bb_1_0, 0))
-        self.connect((self.blocks_throttle2_0, 0), (self.blocks_repeat_1, 0))
+        self.connect((self.blocks_throttle2_0, 0), (self.zeromq_pub_sink_0, 0))
         self.connect((self.blocks_uchar_to_float_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.blocks_uchar_to_float_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_vco_c_0, 0), (self.blocks_throttle2_0, 0))
