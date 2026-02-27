@@ -9,7 +9,7 @@ There are GNU Radio tutorials for some of the modules:
 
 * [Simulation example: Narrowband FM transceiver](https://wiki.gnuradio.org/index.php?title=Simulation_example:_Narrowband_FM_transceiver)
 * [Simulation example: Single Sideband transceiver](https://wiki.gnuradio.org/index.php?title=Simulation_example:_Single_Sideband_transceiver)
-* [File transfer using Packet and BPSK](https://wiki.gnuradio.org/index.php?title=File_transfer_using_Packet_and_BPSK)
+* [File transfer using Packet and BPSK](https://wiki.gnuradio.org/index.php?title=User_talk:Duggabe)
 * [File transfer using Packet and AFSK](https://wiki.gnuradio.org/index.php?title=Simulation_example:_FSK#File_transfer_using_Packet_and_AFSK).
 
 ## Versions
